@@ -1,108 +1,56 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
-import { Container, Typography, Button, TextField } from '@material-ui/core';
+import { useParams } from 'react-router-dom';
 
 function BookDetails() {
   const [book, setBook] = useState(null);
-  const [review, setReview] = useState('');
-  const [rating, setRating] = useState(0);
+  const [loading, setLoading] = useState(true);
   const { id } = useParams();
 
   useEffect(() => {
-    const fetchBook = async () => {
+    // In a real app, you would fetch book details from an API
+    const fetchBookDetails = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/books/${id}`, {
-          headers: { 'x-auth-token': localStorage.getItem('token') }
-        });
-        setBook(res.data);
-      } catch (err) {
-        console.error(err);
+        // Simulating API call
+        const response = await new Promise(resolve => 
+          setTimeout(() => resolve({
+            id,
+            title: `Book Title ${id}`,
+            author: `Author Name ${id}`,
+            description: `This is a detailed description of Book ${id}. It would contain information about the plot, characters, and other relevant details.`,
+            coverImage: `/placeholder.svg?height=300&width=200&text=Book ${id}`,
+          }), 1000)
+        );
+        setBook(response);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching book details:', error);
+        setLoading(false);
       }
     };
-    fetchBook();
+
+    fetchBookDetails();
   }, [id]);
 
-  const handleReviewSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post(`http://localhost:5000/api/books/${id}/reviews`, { text: review }, {
-        headers: { 'x-auth-token': localStorage.getItem('token') }
-      });
-      // Refresh book data
-      const res = await axios.get(`http://localhost:5000/api/books/${id}`, {
-        headers: { 'x-auth-token': localStorage.getItem('token') }
-      });
-      setBook(res.data);
-      setReview('');
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-  const handleRatingSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post(`http://localhost:5000/api/books/${id}/ratings`, { rating }, {
-        headers: { 'x-auth-token': localStorage.getItem('token') }
-      });
-      // Refresh book data
-      const res = await axios.get(`http://localhost:5000/api/books/${id}`, {
-        headers: { 'x-auth-token': localStorage.getItem('token') }
-      });
-      setBook(res.data);
-      setRating(0);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  if (!book) return <div>Loading...</div>;
+  if (!book) {
+    return <div>Book not found</div>;
+  }
 
   return (
-    <Container>
-      <Typography variant="h4" gutterBottom>{book.title}</Typography>
-      <Typography variant="h6" gutterBottom>{book.author}</Typography>
-      <Typography variant="body1" paragraph>{book.description}</Typography>
-      <Button variant="contained" color="primary" component={Link} to={`/read/${book._id}`}>
-        Read Book
-      </Button>
-
-      <Typography variant="h5" gutterBottom>Reviews</Typography>
-      {book.reviews.map((review, index) => (
-        <Typography key={index} variant="body1" paragraph>{review.text}</Typography>
-      ))}
-
-      <form onSubmit={handleReviewSubmit}>
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Write a review"
-          variant="outlined"
-          value={review}
-          onChange={(e) => setReview(e.target.value)}
-        />
-        <Button type="submit" variant="contained" color="primary">
-          Submit Review
-        </Button>
-      </form>
-
-      <Typography variant="h5" gutterBottom>Rate this book</Typography>
-      <form onSubmit={handleRatingSubmit}>
-        <TextField
-          type="number"
-          margin="normal"
-          label="Rating (1-5)"
-          variant="outlined"
-          value={rating}
-          onChange={(e) => setRating(e.target.value)}
-          inputProps={{ min: 1, max: 5 }}
-        />
-        <Button type="submit" variant="contained" color="primary">
-          Submit Rating
-        </Button>
-      </form>
-    </Container>
+    <section className="book-details">
+      <div className="book-info">
+        <img src={book.coverImage} alt={book.title} className="book-cover" />
+        <div className="book-text">
+          <h2>{book.title}</h2>
+          <p className="author">by {book.author}</p>
+          <p className="description">{book.description}</p>
+          <button className="read-button">Start Reading</button>
+        </div>
+      </div>
+    </section>
   );
 }
 
