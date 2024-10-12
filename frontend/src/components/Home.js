@@ -7,7 +7,7 @@ function Home() {
 
   return (
     <section className="home">
-      <h1>Welcome to eBook Platform</h1>
+      <h1>Welcome to Vidhyarth</h1>
       <p>Discover and read your favorite books online!</p>
       {currentUser ? (
         <Link to="/books" className="cta-button">Browse Books</Link>
