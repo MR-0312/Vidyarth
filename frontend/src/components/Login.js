@@ -12,7 +12,6 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // In a real app, you would validate credentials with an API
       await login({ email });
       navigate('/profile');
     } catch (error) {
@@ -22,7 +21,7 @@ function Login() {
 
   return (
     <section className="login">
-      <h2>Login</h2>
+      <h2>Login into account</h2>
       {error && <p className="error">{error}</p>}
       <form onSubmit={handleSubmit}>
         <input

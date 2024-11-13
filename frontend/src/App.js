@@ -17,7 +17,7 @@ function App() {
         <div className="app">
           <header>
             <nav>
-              <div className="logo">eBook Platform</div>
+              <div className="logo">Vidyarth eBook library</div>
               <ul>
                 <li><Link to="/">Home</Link></li>
                 <li><Link to="/books">Books</Link></li>
@@ -40,7 +40,7 @@ function App() {
           </main>
 
           <footer>
-            <p>&copy; 2023 eBook Platform. All rights reserved.</p>
+            <p>&copy; 2024 Vidhyarth eBook Platform. All rights reserved.</p>
           </footer>
         </div>
       </Router>

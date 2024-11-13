@@ -1,24 +1,39 @@
+:root{
+  --primary-color: rgb(1,4,8);
+  /* #4a90e2; */
+  --secondary-color: #333;
+  --danger-color: #ff0000;
+  --font-color: #fff;
+  --button-mask: #238636;
+  --font-family: "Space Grotesk";
+  --button-hover-mask: #76ff92;
+}
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  font-family: var(--font-family);
 }
 
 body {
   font-family: Arial, sans-serif;
   line-height: 1.6;
-  color: #333;
+  color: var(--secondary-color);
+  background-color: transparent;
 }
 
 .app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  
 }
 
 header {
-  background-color: #4a90e2;
-  color: #fff;
+  background-color: var(--primary-color);
+  color: var(--font-color);
   padding: 1rem;
 }
 
@@ -26,6 +41,7 @@ nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  /* height: 50vh; */
 }
 
 .logo {
@@ -43,18 +59,89 @@ nav ul li {
 }
 
 nav ul li a {
-  color: #fff;
+  color: var(--font-color);
   text-decoration: none;
+}
+h1, h2 {
+  margin-bottom: 1rem;
+}
+section{
+  color: var(--font-color);
+}
+/* Home page */
+.home{
+  background: rgba( 255, 255, 255, 0 );
+box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+backdrop-filter: blur( 6.5px );
+-webkit-backdrop-filter: blur( 6.5px );
+border-radius: 10px;
+border: 1px solid rgba( 255, 255, 255, 0.18 );
+color: var(--font-color);
+}
+.home h1{
+  font-size: 3rem;
+}
+.home .cta-button{
+  background-color: var(--button-mask);
+  color: var(--font-color);
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: bold;
+  margin-top: 1rem;
+  /* background: rgba( 255, 255, 255, 0.05 ); */
+  box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+  backdrop-filter: blur( 3.5px );
+  -webkit-backdrop-filter: blur( 3.5px );
+  border-radius: 10px;
+  border: 1px solid rgba( 255, 255, 255, 0.18 );
+}
+.home .cta-button:hover{
+  background-color: var(--button-hover-mask);
+}
+/* Login page */
+.login{
+  color: var(--font-color);
+  border: 1px solid var(--font-color);
+  border-radius: 10px;
+  padding: 0 10px;
+  box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+  backdrop-filter: blur( 4.5px );
+  -webkit-backdrop-filter: blur( 4.5px );
+  font-size: 1.25rem;
+  
+}
+.login form{
+  display: flex;
+  flex-direction: column;
+  max-width: 300px;
+  margin: 0 auto;
+  padding: 0 10px;
+  
+}
+.login form input{
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.login h2{
+  text-align: center;
+  padding-top: 10px;
+}
+.login button{
+  margin: 0.5rem 0;
+  margin-bottom: 1rem;
 }
 
 main {
   flex: 1;
   padding: 2rem;
+  background-color: var(--primary-color);
+  min-height: 100vh;
 }
 
-h1, h2 {
-  margin-bottom: 1rem;
-}
+
 
 .book-grid {
   display: grid;
@@ -87,8 +174,8 @@ h1, h2 {
 }
 
 .button, button {
-  background-color: #4a90e2;
-  color: #fff;
+  background-color: var(--button-mask);
+  color: var(--font-color);
   border: none;
   padding: 0.5rem 1rem;
   cursor: pointer;
@@ -99,7 +186,7 @@ h1, h2 {
 }
 
 .button:hover, button:hover {
-  background-color: #3a7bc8;
+  background-color: var(--button-hover-mask);
 }
 
 form {
@@ -117,8 +204,8 @@ input {
 }
 
 footer {
-  background-color: #333;
-  color: #fff;
+  background-color: var(--secondary-color);
+  color: var(--font-color);
   text-align: center;
   padding: 1rem;
 }
@@ -130,8 +217,8 @@ footer {
 
 .cta-button {
   display: inline-block;
-  background-color: #4a90e2;
-  color: #fff;
+  background-color: var(--primary-color);
+  color: var(--font-color);
   padding: 0.75rem 1.5rem;
   border-radius: 4px;
   text-decoration: none;
@@ -172,8 +259,13 @@ footer {
   padding: 0.75rem 1.5rem;
 }
 
+.login,.register{
+  max-width: 300px;
+  margin: 0 auto;
+}
+
 .error {
-  color: #ff0000;
+  color: var(--danger-color);
   margin-bottom: 1rem;
 }
 

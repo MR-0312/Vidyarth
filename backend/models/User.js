@@ -1,23 +1,38 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 
 const UserSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  isAdmin: { type: Boolean, default: false },
-  readingHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Book' }],
-  bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Book' }],
-}, { timestamps: true });
-
-UserSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password, 12);
-  next();
+  username: {
+    type: String,
+    required: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  profilePicture: {
+    type: String,
+    default: 'default-profile.jpg'
+  },
+  bio: {
+    type: String,
+    default: ''
+  },
+  favorites: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Book'
+  }],
+  preferredCategories: [{
+    type: String
+  }],
+  date: {
+    type: Date,
+    default: Date.now
+  }
 });
-
-UserSchema.methods.comparePassword = async function(candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
-};
 
 module.exports = mongoose.model('User', UserSchema);
