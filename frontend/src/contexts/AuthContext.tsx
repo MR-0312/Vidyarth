@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext } from "react";
 
 interface User {
   name: string;
@@ -18,13 +18,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
   const login = async (email: string, password: string) => {
-    // This is a placeholder. In a real app, you'd make an API call to authenticate
-    setUser({ name: 'Test User', email });
+    setUser({ name: "Test User", email });
   };
 
   const register = async (name: string, email: string, password: string) => {
-    // This is a placeholder. In a real app, you'd make an API call to register
-    console.log('Registered:', { name, email, password });
+    console.log("Registered:", { name, email, password });
   };
 
   const logout = () => {
@@ -40,9 +38,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
-

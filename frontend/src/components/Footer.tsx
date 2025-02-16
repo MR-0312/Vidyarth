@@ -1,14 +1,14 @@
-import React from 'react';
+import React from "react";
+import { Layout } from "antd";
 
-function Footer() {
+const { Footer } = Layout;
+
+function Footers() {
   return (
-    <footer className="bg-gray-200 p-4 mt-8">
-      <div className="container mx-auto text-center">
-        <p>&copy; 2024 Vidyarth eBook Platform. All rights reserved.</p>
-      </div>
-    </footer>
+    <Footer className="footerStyle">
+      <p>&copy; 2024 Vidyarth eBook Platform. All rights reserved.</p>
+    </Footer>
   );
 }
 
-export default Footer;
-
+export default Footers;

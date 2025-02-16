@@ -1,23 +1,26 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import Home from './pages/Home';
-import BookList from './pages/BookList';
-import BookDetails from './pages/BookDetails';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Profile from './pages/Profile';
-import { AuthProvider } from './contexts/AuthContext';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Headers from "./components/Header";
+import Footers from "./components/Footer";
+import Home from "./pages/Home";
+import BookList from "./pages/BookList";
+import BookDetails from "./pages/BookDetails";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Profile from "./pages/Profile";
+import { AuthProvider } from "./contexts/AuthContext";
+import { Layout } from "antd";
+import "./App.css";
+
+const { Content } = Layout;
 
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="app">
-          <Header />
-          <main>
+        <Layout className="app">
+          <Headers />
+          <Content className="contentStyle">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/books" element={<BookList />} />
@@ -26,13 +29,12 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/profile" element={<Profile />} />
             </Routes>
-          </main>
-          <Footer />
-        </div>
+          </Content>
+          <Footers />
+        </Layout>
       </Router>
     </AuthProvider>
   );
 }
 
 export default App;
-

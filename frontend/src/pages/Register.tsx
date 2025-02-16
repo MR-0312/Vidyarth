@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { Layout } from 'antd';
+const {Content} = Layout;
 
 function Register() {
   const [name, setName] = useState('');
@@ -21,6 +23,7 @@ function Register() {
   };
 
   return (
+    <Content>
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-4">Register</h1>
       <form onSubmit={handleSubmit} className="max-w-md mx-auto">
@@ -62,6 +65,7 @@ function Register() {
         </button>
       </form>
     </div>
+    </Content>
   );
 }
 
