@@ -19,6 +19,12 @@ function Headers() {
         <Menu.Item key="2">
           <Link to="/books" style={{ color: "#ffe8c6" }}>Books</Link>
         </Menu.Item>
+        <Menu.Item key="3">
+          <Link to="/login" style={{color: "#ffe8c6"}}>Login</Link>
+        </Menu.Item>
+        <Menu.Item key="4">
+          <Link to="/register" style={{color: "#ffe8c6"}}>Register</Link>
+        </Menu.Item>
       </Menu>
     </Header>
   );
