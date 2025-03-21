@@ -6,12 +6,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Library from "./pages/Library";
 import { AuthProvider } from "./context/AuthContext";
-
-const books = [
-  { id: 1, title: "The Shaman's Shadow Workbook", image: "path/to/image1.jpg" },
-  { id: 2, title: "Wonderfully Made", image: "path/to/image2.jpg" },
-  // ...add more books as needed
-];
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
