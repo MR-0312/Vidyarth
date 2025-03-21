@@ -1,14 +1,19 @@
-import React from 'react';
-
-function Footer() {
+const Footer = () => {
   return (
-    <footer className="bg-gray-200 p-4 mt-8">
-      <div className="container mx-auto text-center">
-        <p>&copy; 2024 Vidyarth eBook Platform. All rights reserved.</p>
+    <footer className="footer">
+      <div className="footer-container">
+        <p>
+          &copy; {new Date().getFullYear()} Vidhyarth eBook Reader. All rights
+          reserved.
+        </p>
+        <div className="footer-links">
+          <a href="/about">About</a>
+          <a href="/contact">Contact</a>
+          <a href="/privacy">Privacy Policy</a>
+        </div>
       </div>
     </footer>
   );
-}
+};
 
 export default Footer;
-
