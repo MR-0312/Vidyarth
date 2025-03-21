@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const Login = () => {
+const Signup = () => {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
@@ -13,23 +15,31 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    // Validation
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
     setIsLoading(true);
 
     // Simulate network request
     try {
       // For demo, we'll use a timeout to simulate API call
       setTimeout(() => {
-        // Mock login logic - in a real app this would validate with a backend
-        if (email === "user@example.com" && password === "password") {
-          login({ name: "Demo User", email });
-          navigate("/library");
-        } else {
-          setError("Invalid email or password");
-        }
+        // Mock signup logic - in a real app this would register with a backend
+        login({ name, email });
+        navigate("/library");
         setIsLoading(false);
       }, 1500);
     } catch (err) {
-      setError("Failed to login. Please try again.");
+      setError("Failed to sign up. Please try again.");
       setIsLoading(false);
     }
   };
@@ -210,7 +220,7 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Right side - Login form */}
+      {/* Right side - Signup form */}
       <div
         style={{
           flex: "1",
@@ -235,7 +245,7 @@ const Login = () => {
               color: "white",
             }}
           >
-            Welcome back
+            Create your account
           </h2>
 
           {error && (
@@ -255,6 +265,38 @@ const Login = () => {
           )}
 
           <form onSubmit={handleSubmit}>
+            <div style={{ marginBottom: "20px" }}>
+              <label
+                htmlFor="name"
+                style={{
+                  display: "block",
+                  marginBottom: "8px",
+                  fontSize: "14px",
+                  color: "#a8a9aa",
+                }}
+              >
+                Full Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                placeholder="Your name"
+                style={{
+                  width: "100%",
+                  padding: "12px 15px",
+                  fontSize: "16px",
+                  backgroundColor: "#3a3f41",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  outline: "none",
+                }}
+              />
+            </div>
+
             <div style={{ marginBottom: "20px" }}>
               <label
                 htmlFor="email"
@@ -287,42 +329,57 @@ const Login = () => {
               />
             </div>
 
-            <div style={{ marginBottom: "25px" }}>
-              <div
+            <div style={{ marginBottom: "20px" }}>
+              <label
+                htmlFor="password"
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
+                  display: "block",
                   marginBottom: "8px",
+                  fontSize: "14px",
+                  color: "#a8a9aa",
                 }}
               >
-                <label
-                  htmlFor="password"
-                  style={{
-                    fontSize: "14px",
-                    color: "#a8a9aa",
-                  }}
-                >
-                  Password
-                </label>
-                <Link
-                  to="/forgot-password"
-                  style={{
-                    color: "#0078ff",
-                    fontSize: "14px",
-                    textDecoration: "none",
-                  }}
-                >
-                  Forgot password?
-                </Link>
-              </div>
+                Password
+              </label>
               <input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                placeholder="••••••••"
+                placeholder="At least 6 characters"
+                style={{
+                  width: "100%",
+                  padding: "12px 15px",
+                  fontSize: "16px",
+                  backgroundColor: "#3a3f41",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  outline: "none",
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: "25px" }}>
+              <label
+                htmlFor="confirmPassword"
+                style={{
+                  display: "block",
+                  marginBottom: "8px",
+                  fontSize: "14px",
+                  color: "#a8a9aa",
+                }}
+              >
+                Confirm Password
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                placeholder="Confirm your password"
                 style={{
                   width: "100%",
                   padding: "12px 15px",
@@ -370,7 +427,7 @@ const Login = () => {
                   }}
                 />
               ) : (
-                "Log in"
+                "Sign up"
               )}
             </button>
 
@@ -387,16 +444,16 @@ const Login = () => {
                 color: "#a8a9aa",
               }}
             >
-              Don't have an account?{" "}
+              Already have an account?{" "}
               <Link
-                to="/signup"
+                to="/login"
                 style={{
                   color: "#0078ff",
                   textDecoration: "none",
                   fontWeight: "500",
                 }}
               >
-                Sign up
+                Log in
               </Link>
             </div>
           </form>
@@ -413,7 +470,7 @@ const Login = () => {
               style={{ flex: "1", height: "1px", backgroundColor: "#3a3f41" }}
             ></div>
             <span style={{ color: "#a8a9aa", fontSize: "14px" }}>
-              or continue with
+              or sign up with
             </span>
             <div
               style={{ flex: "1", height: "1px", backgroundColor: "#3a3f41" }}
@@ -514,4 +571,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Signup;

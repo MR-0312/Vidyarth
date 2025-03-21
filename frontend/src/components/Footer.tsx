@@ -1,14 +1,19 @@
-import React from "react";
-import { Layout } from "antd";
-
-const { Footer } = Layout;
-
-function Footers() {
+const Footer = () => {
   return (
-    <Footer className="footerStyle">
-      <p>&copy; 2024 Vidyarth eBook Platform. All rights reserved.</p>
-    </Footer>
+    <footer className="footer">
+      <div className="footer-container">
+        <p>
+          &copy; {new Date().getFullYear()} Vidhyarth eBook Reader. All rights
+          reserved.
+        </p>
+        <div className="footer-links">
+          <a href="/about">About</a>
+          <a href="/contact">Contact</a>
+          <a href="/privacy">Privacy Policy</a>
+        </div>
+      </div>
+    </footer>
   );
-}
+};
 
-export default Footers;
+export default Footer;
