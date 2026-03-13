@@ -79,10 +79,15 @@ const Home = () => {
       {/* Header / Navigation */}
       <header
         style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 1000,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          padding: "25px 50px",
+          padding: "16px clamp(16px, 4vw, 50px)",
+          backgroundColor: "rgba(42, 46, 48, 0.9)",
+          backdropFilter: "blur(8px)",
           borderBottom: "1px solid rgba(255,255,255,0.1)",
         }}
       >
@@ -641,8 +646,9 @@ const Home = () => {
       <footer
         id="about"
         style={{
+          position: "static",
           backgroundColor: "#222628",
-          padding: "50px",
+          padding: "36px 20px",
           borderTop: "1px solid rgba(255,255,255,0.1)",
         }}
       >
@@ -653,7 +659,7 @@ const Home = () => {
             justifyContent: "space-between",
             maxWidth: "1200px",
             margin: "0 auto",
-            gap: "40px",
+            gap: "24px",
           }}
         >
           <div style={{ maxWidth: "300px" }}>
@@ -887,8 +893,8 @@ const Home = () => {
         <div
           style={{
             borderTop: "1px solid rgba(255,255,255,0.1)",
-            marginTop: "40px",
-            paddingTop: "20px",
+            marginTop: "28px",
+            paddingTop: "16px",
             textAlign: "center",
             color: "#d1d5db",
             fontSize: "14px",
