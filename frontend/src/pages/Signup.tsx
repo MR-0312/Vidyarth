@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -10,6 +11,7 @@ const Signup = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,15 +52,50 @@ const Signup = () => {
         display: "flex",
         height: "100vh",
         width: "100%",
-        backgroundColor: "#2a2e30",
+        backgroundColor: "var(--bg-primary)",
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
-        color: "white",
+        color: "var(--text-primary)",
         overflow: "hidden",
         margin: 0,
         padding: 0,
+        position: "relative",
       }}
     >
+      {/* Theme Toggle */}
+      <button
+        onClick={toggleTheme}
+        title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+        style={{
+          position: "absolute",
+          top: "16px",
+          right: "16px",
+          zIndex: 10,
+          background: "none",
+          border: "1px solid var(--border-color)",
+          borderRadius: "20px",
+          padding: "6px 12px",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+          color: "var(--text-primary)",
+          fontSize: "14px",
+          backgroundColor: "var(--bg-elevated)",
+        }}
+      >
+        {theme === "dark" ? (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        ) : (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+        {theme === "dark" ? "Light" : "Dark"}
+      </button>
       {/* Left side - Brand/Logo */}
       <div
         style={{
@@ -242,7 +279,7 @@ const Signup = () => {
               fontSize: "28px",
               fontWeight: "500",
               marginBottom: "30px",
-              color: "white",
+              color: "var(--text-primary)",
             }}
           >
             Create your account
@@ -272,7 +309,7 @@ const Signup = () => {
                   display: "block",
                   marginBottom: "8px",
                   fontSize: "14px",
-                  color: "#a8a9aa",
+                  color: "var(--text-muted)",
                 }}
               >
                 Full Name
@@ -288,8 +325,8 @@ const Signup = () => {
                   width: "100%",
                   padding: "12px 15px",
                   fontSize: "16px",
-                  backgroundColor: "#3a3f41",
-                  color: "white",
+                  backgroundColor: "var(--input-bg)",
+                  color: "var(--text-primary)",
                   border: "none",
                   borderRadius: "8px",
                   outline: "none",
@@ -304,7 +341,7 @@ const Signup = () => {
                   display: "block",
                   marginBottom: "8px",
                   fontSize: "14px",
-                  color: "#a8a9aa",
+                  color: "var(--text-muted)",
                 }}
               >
                 Email
@@ -320,8 +357,8 @@ const Signup = () => {
                   width: "100%",
                   padding: "12px 15px",
                   fontSize: "16px",
-                  backgroundColor: "#3a3f41",
-                  color: "white",
+                  backgroundColor: "var(--input-bg)",
+                  color: "var(--text-primary)",
                   border: "none",
                   borderRadius: "8px",
                   outline: "none",
@@ -336,7 +373,7 @@ const Signup = () => {
                   display: "block",
                   marginBottom: "8px",
                   fontSize: "14px",
-                  color: "#a8a9aa",
+                  color: "var(--text-muted)",
                 }}
               >
                 Password
@@ -352,8 +389,8 @@ const Signup = () => {
                   width: "100%",
                   padding: "12px 15px",
                   fontSize: "16px",
-                  backgroundColor: "#3a3f41",
-                  color: "white",
+                  backgroundColor: "var(--input-bg)",
+                  color: "var(--text-primary)",
                   border: "none",
                   borderRadius: "8px",
                   outline: "none",
@@ -368,7 +405,7 @@ const Signup = () => {
                   display: "block",
                   marginBottom: "8px",
                   fontSize: "14px",
-                  color: "#a8a9aa",
+                  color: "var(--text-muted)",
                 }}
               >
                 Confirm Password
@@ -384,8 +421,8 @@ const Signup = () => {
                   width: "100%",
                   padding: "12px 15px",
                   fontSize: "16px",
-                  backgroundColor: "#3a3f41",
-                  color: "white",
+                  backgroundColor: "var(--input-bg)",
+                  color: "var(--text-primary)",
                   border: "none",
                   borderRadius: "8px",
                   outline: "none",
@@ -441,7 +478,7 @@ const Signup = () => {
               style={{
                 textAlign: "center",
                 fontSize: "14px",
-                color: "#a8a9aa",
+                color: "var(--text-muted)",
               }}
             >
               Already have an account?{" "}
@@ -467,13 +504,13 @@ const Signup = () => {
             }}
           >
             <div
-              style={{ flex: "1", height: "1px", backgroundColor: "#3a3f41" }}
+              style={{ flex: "1", height: "1px", backgroundColor: "var(--divider-color)" }}
             ></div>
-            <span style={{ color: "#a8a9aa", fontSize: "14px" }}>
+            <span style={{ color: "var(--text-muted)", fontSize: "14px" }}>
               or sign up with
             </span>
             <div
-              style={{ flex: "1", height: "1px", backgroundColor: "#3a3f41" }}
+              style={{ flex: "1", height: "1px", backgroundColor: "var(--divider-color)" }}
             ></div>
           </div>
 
@@ -488,7 +525,7 @@ const Signup = () => {
               style={{
                 flex: "1",
                 padding: "12px",
-                backgroundColor: "#3a3f41",
+                backgroundColor: "var(--social-btn-bg)",
                 border: "none",
                 borderRadius: "8px",
                 display: "flex",
@@ -500,7 +537,7 @@ const Signup = () => {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"
-                  stroke="white"
+                  stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -513,7 +550,7 @@ const Signup = () => {
               style={{
                 flex: "1",
                 padding: "12px",
-                backgroundColor: "#3a3f41",
+                backgroundColor: "var(--social-btn-bg)",
                 border: "none",
                 borderRadius: "8px",
                 display: "flex",
@@ -525,7 +562,7 @@ const Signup = () => {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"
-                  stroke="white"
+                  stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -538,7 +575,7 @@ const Signup = () => {
               style={{
                 flex: "1",
                 padding: "12px",
-                backgroundColor: "#3a3f41",
+                backgroundColor: "var(--social-btn-bg)",
                 border: "none",
                 borderRadius: "8px",
                 display: "flex",
@@ -550,14 +587,14 @@ const Signup = () => {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 11.75a29 29 0 00.46 5.33A2.78 2.78 0 003.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2 29 29 0 00.46-5.25 29 29 0 00-.46-5.33z"
-                  stroke="white"
+                  stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
                 <polygon
                   points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"
-                  stroke="white"
+                  stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
