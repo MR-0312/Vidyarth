@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 // Featured books data
 const featuredBooks = [
@@ -52,6 +53,7 @@ const categories = [
 
 const Home = () => {
   const { user, isAuthenticated } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   // Redirect to library if already logged in
@@ -68,8 +70,8 @@ const Home = () => {
         flexDirection: "column",
         minHeight: "100vh",
         width: "100%",
-        backgroundColor: "#2a2e30",
-        color: "white",
+        backgroundColor: "var(--bg-primary)",
+        color: "var(--text-primary)",
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
         margin: 0,
@@ -86,9 +88,9 @@ const Home = () => {
           justifyContent: "space-between",
           alignItems: "center",
           padding: "16px clamp(16px, 4vw, 50px)",
-          backgroundColor: "rgba(42, 46, 48, 0.9)",
+          backgroundColor: "var(--bg-header)",
           backdropFilter: "blur(8px)",
-          borderBottom: "1px solid rgba(255,255,255,0.1)",
+          borderBottom: "1px solid var(--border-color)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center" }}>
@@ -97,7 +99,7 @@ const Home = () => {
               margin: 0,
               fontSize: "28px",
               fontWeight: "300",
-              color: "white",
+              color: "var(--text-primary)",
               letterSpacing: "0.5px",
             }}
           >
@@ -119,7 +121,7 @@ const Home = () => {
               <a
                 href="#features"
                 style={{
-                  color: "white",
+                  color: "var(--text-primary)",
                   textDecoration: "none",
                   fontSize: "16px",
                 }}
@@ -131,7 +133,7 @@ const Home = () => {
               <a
                 href="#about"
                 style={{
-                  color: "white",
+                  color: "var(--text-primary)",
                   textDecoration: "none",
                   fontSize: "16px",
                 }}
@@ -156,6 +158,36 @@ const Home = () => {
             </li>
           </ul>
         </nav>
+
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          style={{
+            background: "none",
+            border: "1px solid var(--border-color)",
+            borderRadius: "20px",
+            padding: "6px 12px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            color: "var(--text-primary)",
+            fontSize: "14px",
+          }}
+        >
+          {theme === "dark" ? (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+          {theme === "dark" ? "Light" : "Dark"}
+        </button>
       </header>
 
       {/* Hero Section */}
@@ -167,8 +199,7 @@ const Home = () => {
           justifyContent: "center",
           padding: "100px 20px",
           textAlign: "center",
-          backgroundImage:
-            "radial-gradient(circle at 50% 50%, #3a3f41 0%, #2a2e30 70%)",
+          background: "var(--hero-gradient)",
           position: "relative",
         }}
       >
@@ -189,7 +220,7 @@ const Home = () => {
             maxWidth: "600px",
             marginBottom: "40px",
             lineHeight: 1.6,
-            color: "#d1d5db",
+            color: "var(--text-secondary)",
           }}
         >
           A modern, elegant e-book reader designed to make your reading
@@ -222,13 +253,13 @@ const Home = () => {
             to="/login"
             style={{
               backgroundColor: "transparent",
-              color: "white",
+              color: "var(--text-primary)",
               padding: "16px 32px",
               borderRadius: "30px",
               textDecoration: "none",
               fontSize: "18px",
               fontWeight: "500",
-              border: "1px solid rgba(255,255,255,0.3)",
+              border: "1px solid var(--border-color)",
             }}
           >
             Sign In
@@ -258,7 +289,7 @@ const Home = () => {
           ></div>
 
           <img
-            src="https://preview.colorlib.com/theme/bootstrap/e-book/img/bg_1.jpg.webp"
+            src="https://images.unsplash.com/photo-1588580000645-4562a6d2c839?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             alt="E-reader interface"
             style={{
               width: "100%",
@@ -276,7 +307,7 @@ const Home = () => {
         id="features"
         style={{
           padding: "100px 50px",
-          backgroundColor: "#222628",
+          backgroundColor: "var(--bg-secondary)",
         }}
       >
         <h2
@@ -340,7 +371,7 @@ const Home = () => {
             <h3 style={{ fontSize: "20px", marginBottom: "10px" }}>
               Multiple Formats
             </h3>
-            <p style={{ color: "#d1d5db", lineHeight: 1.6 }}>
+            <p style={{ color: "var(--text-secondary)", lineHeight: 1.6 }}>
               Support for EPUB, PDF, MOBI, and more. Import your entire library
               without format concerns.
             </p>
@@ -380,7 +411,7 @@ const Home = () => {
             <h3 style={{ fontSize: "20px", marginBottom: "10px" }}>
               Notes & Highlights
             </h3>
-            <p style={{ color: "#d1d5db", lineHeight: 1.6 }}>
+            <p style={{ color: "var(--text-secondary)", lineHeight: 1.6 }}>
               Mark important passages and add your thoughts. All saved and
               easily accessible.
             </p>
@@ -436,7 +467,7 @@ const Home = () => {
             <h3 style={{ fontSize: "20px", marginBottom: "10px" }}>
               Cross-Platform Sync
             </h3>
-            <p style={{ color: "#d1d5db", lineHeight: 1.6 }}>
+            <p style={{ color: "var(--text-secondary)", lineHeight: 1.6 }}>
               Your library syncs across devices so you can pick up where you
               left off, anywhere.
             </p>
@@ -476,7 +507,7 @@ const Home = () => {
             <h3 style={{ fontSize: "20px", marginBottom: "10px" }}>
               Customizable Interface
             </h3>
-            <p style={{ color: "#d1d5db", lineHeight: 1.6 }}>
+            <p style={{ color: "var(--text-secondary)", lineHeight: 1.6 }}>
               Adjust font sizes, colors, and themes to create your perfect
               reading environment.
             </p>
@@ -523,7 +554,7 @@ const Home = () => {
             <h3 style={{ fontSize: "20px", marginBottom: "10px" }}>
               Distraction-Free Reading
             </h3>
-            <p style={{ color: "#d1d5db", lineHeight: 1.6 }}>
+            <p style={{ color: "var(--text-secondary)", lineHeight: 1.6 }}>
               Focus mode eliminates distractions so you can immerse yourself in
               your book.
             </p>
@@ -583,7 +614,7 @@ const Home = () => {
             <h3 style={{ fontSize: "20px", marginBottom: "10px" }}>
               Library Organization
             </h3>
-            <p style={{ color: "#d1d5db", lineHeight: 1.6 }}>
+            <p style={{ color: "var(--text-secondary)", lineHeight: 1.6 }}>
               Organize books by tags, collections, and custom shelves for easy
               access.
             </p>
@@ -596,7 +627,7 @@ const Home = () => {
         style={{
           padding: "100px 50px",
           textAlign: "center",
-          backgroundColor: "#2a2e30",
+          backgroundColor: "var(--bg-primary)",
         }}
       >
         <h2
@@ -617,7 +648,7 @@ const Home = () => {
             maxWidth: "600px",
             marginBottom: "40px",
             lineHeight: 1.6,
-            color: "#d1d5db",
+            color: "var(--text-secondary)",
             margin: "0 auto 40px",
           }}
         >
@@ -647,9 +678,9 @@ const Home = () => {
         id="about"
         style={{
           position: "static",
-          backgroundColor: "#222628",
+          backgroundColor: "var(--bg-secondary)",
           padding: "36px 20px",
-          borderTop: "1px solid rgba(255,255,255,0.1)",
+          borderTop: "1px solid var(--border-color)",
         }}
       >
         <div
@@ -668,7 +699,7 @@ const Home = () => {
                 fontSize: "28px",
                 fontWeight: "300",
                 marginBottom: "20px",
-                color: "white",
+                color: "var(--text-primary)",
                 letterSpacing: "0.5px",
               }}
             >
@@ -676,7 +707,7 @@ const Home = () => {
             </h3>
             <p
               style={{
-                color: "#d1d5db",
+                color: "var(--text-secondary)",
                 lineHeight: 1.6,
                 marginBottom: "20px",
               }}
@@ -744,14 +775,20 @@ const Home = () => {
           </div>
 
           <div>
-            <h4 style={{ fontSize: "18px", marginBottom: "20px" }}>
+            <h4
+              style={{
+                fontSize: "18px",
+                marginBottom: "20px",
+                color: "var(--text-primary)",
+              }}
+            >
               Quick Links
             </h4>
             <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
               <li style={{ marginBottom: "10px" }}>
                 <a
                   href="#"
-                  style={{ color: "#d1d5db", textDecoration: "none" }}
+                  style={{ color: "var(--text-secondary)", textDecoration: "none" }}
                 >
                   Features
                 </a>
@@ -759,7 +796,7 @@ const Home = () => {
               <li style={{ marginBottom: "10px" }}>
                 <a
                   href="#"
-                  style={{ color: "#d1d5db", textDecoration: "none" }}
+                  style={{ color: "var(--text-secondary)", textDecoration: "none" }}
                 >
                   Pricing
                 </a>
@@ -767,7 +804,7 @@ const Home = () => {
               <li style={{ marginBottom: "10px" }}>
                 <a
                   href="#"
-                  style={{ color: "#d1d5db", textDecoration: "none" }}
+                  style={{ color: "var(--text-secondary)", textDecoration: "none" }}
                 >
                   Download
                 </a>
@@ -775,7 +812,7 @@ const Home = () => {
               <li style={{ marginBottom: "10px" }}>
                 <a
                   href="#"
-                  style={{ color: "#d1d5db", textDecoration: "none" }}
+                  style={{ color: "var(--text-secondary)", textDecoration: "none" }}
                 >
                   About
                 </a>
@@ -784,12 +821,20 @@ const Home = () => {
           </div>
 
           <div>
-            <h4 style={{ fontSize: "18px", marginBottom: "20px" }}>Legal</h4>
+            <h4
+              style={{
+                fontSize: "18px",
+                marginBottom: "20px",
+                color: "var(--text-primary)",
+              }}
+            >
+              Legal
+            </h4>
             <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
               <li style={{ marginBottom: "10px" }}>
                 <a
                   href="#"
-                  style={{ color: "#d1d5db", textDecoration: "none" }}
+                  style={{ color: "var(--text-secondary)", textDecoration: "none" }}
                 >
                   Terms of Service
                 </a>
@@ -797,7 +842,7 @@ const Home = () => {
               <li style={{ marginBottom: "10px" }}>
                 <a
                   href="#"
-                  style={{ color: "#d1d5db", textDecoration: "none" }}
+                  style={{ color: "var(--text-secondary)", textDecoration: "none" }}
                 >
                   Privacy Policy
                 </a>
@@ -805,7 +850,7 @@ const Home = () => {
               <li style={{ marginBottom: "10px" }}>
                 <a
                   href="#"
-                  style={{ color: "#d1d5db", textDecoration: "none" }}
+                  style={{ color: "var(--text-secondary)", textDecoration: "none" }}
                 >
                   Cookie Policy
                 </a>
@@ -814,7 +859,15 @@ const Home = () => {
           </div>
 
           <div>
-            <h4 style={{ fontSize: "18px", marginBottom: "20px" }}>Contact</h4>
+            <h4
+              style={{
+                fontSize: "18px",
+                marginBottom: "20px",
+                color: "var(--text-primary)",
+              }}
+            >
+              Contact
+            </h4>
             <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
               <li
                 style={{
@@ -827,13 +880,13 @@ const Home = () => {
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <path
                     d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"
-                    stroke="#d1d5db"
+                    stroke="var(--text-secondary)"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span style={{ color: "#d1d5db" }}>+1 (123) 456-7890</span>
+                <span style={{ color: "var(--text-secondary)" }}>+1 (123) 456-7890</span>
               </li>
               <li
                 style={{
@@ -846,20 +899,20 @@ const Home = () => {
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <path
                     d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
-                    stroke="#d1d5db"
+                    stroke="var(--text-secondary)"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                   <polyline
                     points="22,6 12,13 2,6"
-                    stroke="#d1d5db"
+                    stroke="var(--text-secondary)"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span style={{ color: "#d1d5db" }}>
+                <span style={{ color: "var(--text-secondary)" }}>
                   support@koodoreader.com
                 </span>
               </li>
@@ -869,7 +922,7 @@ const Home = () => {
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <path
                     d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"
-                    stroke="#d1d5db"
+                    stroke="var(--text-secondary)"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -878,13 +931,13 @@ const Home = () => {
                     cx="12"
                     cy="10"
                     r="3"
-                    stroke="#d1d5db"
+                    stroke="var(--text-secondary)"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span style={{ color: "#d1d5db" }}>San Francisco, CA</span>
+                <span style={{ color: "var(--text-secondary)" }}>San Francisco, CA</span>
               </li>
             </ul>
           </div>
@@ -892,11 +945,11 @@ const Home = () => {
 
         <div
           style={{
-            borderTop: "1px solid rgba(255,255,255,0.1)",
+            borderTop: "1px solid var(--border-color)",
             marginTop: "28px",
             paddingTop: "16px",
             textAlign: "center",
-            color: "#d1d5db",
+            color: "var(--text-secondary)",
             fontSize: "14px",
           }}
         >

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 // Sample book data
 const books = [
@@ -56,6 +57,7 @@ const books = [
 
 const Library = () => {
   const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [viewMode, setViewMode] = useState("grid"); // "grid" or "list"
@@ -67,8 +69,8 @@ const Library = () => {
         display: "flex",
         height: "100vh",
         width: "100%",
-        background: "#2a2e30",
-        color: "white",
+        background: "var(--bg-primary)",
+        color: "var(--text-primary)",
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
         overflow: "hidden",
@@ -317,8 +319,8 @@ const Library = () => {
             display: "flex",
             alignItems: "center",
             padding: "15px 20px",
-            borderBottom: "1px solid #3a3f41",
-            backgroundColor: "#2a2e30",
+            borderBottom: "1px solid var(--border-solid)",
+            backgroundColor: "var(--bg-primary)",
           }}
         >
           <button
@@ -326,7 +328,7 @@ const Library = () => {
             style={{
               background: "none",
               border: "none",
-              color: "white",
+              color: "var(--text-primary)",
               cursor: "pointer",
               padding: "5px",
               marginRight: "15px",
@@ -376,7 +378,7 @@ const Library = () => {
               flex: "1",
               maxWidth: "400px",
               position: "relative",
-              backgroundColor: "#3a3f41",
+              backgroundColor: "var(--search-bg)",
               borderRadius: "20px",
               padding: "6px 15px",
             }}
@@ -389,7 +391,7 @@ const Library = () => {
               style={{
                 backgroundColor: "transparent",
                 border: "none",
-                color: "white",
+                color: "var(--text-primary)",
                 outline: "none",
                 width: "100%",
                 fontSize: "14px",
@@ -437,7 +439,7 @@ const Library = () => {
               style={{
                 background: "none",
                 border: "none",
-                color: "white",
+                color: "var(--text-primary)",
                 cursor: "pointer",
                 padding: "0",
                 display: "flex",
@@ -464,7 +466,7 @@ const Library = () => {
               style={{
                 background: "none",
                 border: "none",
-                color: "white",
+                color: "var(--text-primary)",
                 cursor: "pointer",
                 padding: "0",
                 display: "flex",
@@ -493,7 +495,7 @@ const Library = () => {
               style={{
                 background: "none",
                 border: "none",
-                color: "white",
+                color: "var(--text-primary)",
                 cursor: "pointer",
                 padding: "0",
                 display: "flex",
@@ -530,7 +532,7 @@ const Library = () => {
               style={{
                 background: "none",
                 border: "none",
-                color: "white",
+                color: "var(--text-primary)",
                 cursor: "pointer",
                 padding: "0",
                 display: "flex",
@@ -570,7 +572,7 @@ const Library = () => {
             >
               <span
                 style={{
-                  color: "#a8a9aa",
+                  color: "var(--text-muted)",
                   fontSize: "14px",
                   fontWeight: "300",
                 }}
@@ -579,11 +581,11 @@ const Library = () => {
               </span>
               <button
                 style={{
-                  backgroundColor: "#4a4f51",
+                  backgroundColor: "var(--import-btn-bg)",
                   border: "none",
                   borderRadius: "20px",
                   padding: "8px 20px",
-                  color: "white",
+                  color: "var(--text-primary)",
                   fontSize: "14px",
                   fontWeight: "400",
                   cursor: "pointer",
@@ -592,6 +594,36 @@ const Library = () => {
                 Import
               </button>
             </div>
+
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              style={{
+                background: "none",
+                border: "1px solid var(--border-solid)",
+                borderRadius: "20px",
+                padding: "5px 10px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                color: "var(--text-primary)",
+                fontSize: "13px",
+              }}
+            >
+              {theme === "dark" ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+              {theme === "dark" ? "Light" : "Dark"}
+            </button>
           </div>
         </header>
 
@@ -601,8 +633,8 @@ const Library = () => {
             display: "flex",
             alignItems: "center",
             padding: "10px 20px",
-            backgroundColor: "#222628",
-            borderBottom: "1px solid #3a3f41",
+            backgroundColor: "var(--bg-secondary)",
+            borderBottom: "1px solid var(--border-solid)",
           }}
         >
           <div
@@ -617,7 +649,7 @@ const Library = () => {
               style={{
                 background: "none",
                 border: "none",
-                color: viewMode === "grid" ? "#0078ff" : "#a8a9aa",
+                color: viewMode === "grid" ? "#0078ff" : "var(--text-muted)",
                 padding: "5px",
                 display: "flex",
                 alignItems: "center",
@@ -672,7 +704,7 @@ const Library = () => {
               style={{
                 background: "none",
                 border: "none",
-                color: viewMode === "list" ? "#0078ff" : "#a8a9aa",
+              color: viewMode === "list" ? "#0078ff" : "var(--text-muted)",
                 padding: "5px",
                 display: "flex",
                 alignItems: "center",
@@ -752,13 +784,13 @@ const Library = () => {
               gap: "10px",
             }}
           >
-            <span style={{ color: "#a8a9aa", fontSize: "14px" }}>Sort by:</span>
+            <span style={{ color: "var(--text-muted)", fontSize: "14px" }}>Sort by:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               style={{
-                backgroundColor: "#3a3f41",
-                color: "white",
+                backgroundColor: "var(--input-bg)",
+                color: "var(--text-primary)",
                 border: "none",
                 borderRadius: "4px",
                 padding: "5px 10px",
@@ -778,7 +810,7 @@ const Library = () => {
           style={{
             flex: 1,
             padding: "30px",
-            backgroundColor: "#2a2e30",
+            backgroundColor: "var(--bg-primary)",
             overflowY: "auto",
           }}
         >
@@ -797,7 +829,7 @@ const Library = () => {
                   flexDirection: "column",
                   borderRadius: "8px",
                   overflow: "hidden",
-                  backgroundColor: "#222628",
+                  backgroundColor: "var(--bg-card)",
                   transition: "transform 0.2s ease",
                   cursor: "pointer",
                   height: "100%",
@@ -807,7 +839,7 @@ const Library = () => {
                   style={{
                     position: "relative",
                     paddingBottom: "140%",
-                    backgroundColor: "#1a1d1e",
+                    backgroundColor: "var(--bg-image)",
                     overflow: "hidden",
                   }}
                 >
@@ -857,7 +889,7 @@ const Library = () => {
                       margin: "0 0 5px 0",
                       fontSize: "16px",
                       fontWeight: "500",
-                      color: "#f8f9fa",
+                      color: "var(--text-book-title)",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       display: "-webkit-box",
@@ -871,7 +903,7 @@ const Library = () => {
                     style={{
                       margin: "0 0 10px 0",
                       fontSize: "14px",
-                      color: "#a8a9aa",
+                      color: "var(--text-muted)",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
@@ -890,9 +922,9 @@ const Library = () => {
                     <span
                       style={{
                         fontSize: "12px",
-                        color: "#a8a9aa",
+                        color: "var(--text-muted)",
                         padding: "2px 8px",
-                        backgroundColor: "#3a3f41",
+                        backgroundColor: "var(--bg-elevated)",
                         borderRadius: "4px",
                       }}
                     >
@@ -902,7 +934,7 @@ const Library = () => {
                       <span
                         style={{
                           fontSize: "12px",
-                          color: "#a8a9aa",
+                          color: "var(--text-muted)",
                         }}
                       >
                         {book.progress}%

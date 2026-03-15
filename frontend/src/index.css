@@ -1,3 +1,53 @@
+/* ===== CSS Custom Properties (Theme Variables) ===== */
+:root,
+html[data-theme="dark"] {
+  --bg-primary: #2a2e30;
+  --bg-secondary: #222628;
+  --bg-elevated: #3a3f41;
+  --bg-header: rgba(42, 46, 48, 0.9);
+  --bg-card: #222628;
+  --bg-image: #1a1d1e;
+  --text-primary: #ffffff;
+  --text-secondary: #d1d5db;
+  --text-muted: #a8a9aa;
+  --text-book-title: #f8f9fa;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-solid: #3a3f41;
+  --search-bg: #3a3f41;
+  --input-bg: #3a3f41;
+  --import-btn-bg: #4a4f51;
+  --social-btn-bg: #3a3f41;
+  --divider-color: #3a3f41;
+  --hero-gradient: radial-gradient(circle at 50% 50%, #3a3f41 0%, #2a2e30 70%);
+  --toggle-track: #3a3f41;
+  --toggle-thumb: #a8a9aa;
+  color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  --bg-primary: #f4f6f8;
+  --bg-secondary: #e8ecef;
+  --bg-elevated: #ffffff;
+  --bg-header: rgba(244, 246, 248, 0.92);
+  --bg-card: #ffffff;
+  --bg-image: #dde2e7;
+  --text-primary: #1a202c;
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
+  --text-book-title: #1a202c;
+  --border-color: rgba(0, 0, 0, 0.08);
+  --border-solid: #d1d5db;
+  --search-bg: #dde2e7;
+  --input-bg: #e8ecef;
+  --import-btn-bg: #dde2e7;
+  --social-btn-bg: #e8ecef;
+  --divider-color: #d1d5db;
+  --hero-gradient: radial-gradient(circle at 50% 50%, #dde2e7 0%, #f4f6f8 70%);
+  --toggle-track: #d1d5db;
+  --toggle-thumb: #718096;
+  color-scheme: light;
+}
+
 /* Reset and base styles */
 * {
   margin: 0;
@@ -14,8 +64,8 @@ html {
   overflow-x: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
     Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  background-color: #2a2e30;
-  color: white;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 #root {
@@ -45,6 +95,13 @@ textarea,
 select {
   font-family: inherit;
   font-size: inherit;
+}
+
+/* Smooth theme transitions */
+body,
+*:not(img):not(video):not(svg):not(canvas) {
+  transition: background-color 0.25s ease, color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 /* Animation */
