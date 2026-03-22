@@ -31,15 +31,35 @@ const Signup = () => {
 
     setIsLoading(true);
 
-    // Simulate network request
     try {
-      // For demo, we'll use a timeout to simulate API call
-      setTimeout(() => {
-        // Mock signup logic - in a real app this would register with a backend
-        login({ name, email });
-        navigate("/library");
+      const response = await fetch("http://localhost:8080/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: name,
+          email,
+          password,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(errorData.msg || "Failed to sign up. Please try again.");
         setIsLoading(false);
-      }, 1500);
+        return;
+      }
+
+      const data = await response.json();
+      
+      // Store the JWT token
+      localStorage.setItem("koodoreader_token", data.token);
+      
+      // Log the user in
+      login({ name, email });
+      navigate("/library");
+      setIsLoading(false);
     } catch (err) {
       setError("Failed to sign up. Please try again.");
       setIsLoading(false);

@@ -17,19 +17,46 @@ const Login = () => {
     setError("");
     setIsLoading(true);
 
-    // Simulate network request
     try {
-      // For demo, we'll use a timeout to simulate API call
-      setTimeout(() => {
-        // Mock login logic - in a real app this would validate with a backend
-        if (email === "user@example.com" && password === "password") {
-          login({ name: "Demo User", email });
-          navigate("/library");
-        } else {
-          setError("Invalid email or password");
-        }
+      const response = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(errorData.msg || "Failed to login. Please try again.");
         setIsLoading(false);
-      }, 1500);
+        return;
+      }
+
+      const data = await response.json();
+      
+      // Store the JWT token
+      localStorage.setItem("koodoreader_token", data.token);
+      
+      // Fetch user data using the token
+      const userResponse = await fetch("http://localhost:8080/api/auth/user", {
+        headers: {
+          "x-auth-token": data.token,
+        },
+      });
+
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        login({ name: userData.username, email: userData.email });
+      } else {
+        login({ name: email.split("@")[0], email });
+      }
+
+      navigate("/library");
+      setIsLoading(false);
     } catch (err) {
       setError("Failed to login. Please try again.");
       setIsLoading(false);

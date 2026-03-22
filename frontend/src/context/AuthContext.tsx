@@ -30,9 +30,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Check if user is stored in localStorage
+    // Check if token is stored in localStorage
+    const token = localStorage.getItem("koodoreader_token");
     const storedUser = localStorage.getItem("koodoreader_user");
-    if (storedUser) {
+    
+    if (token && storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
@@ -40,6 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       } catch (error) {
         console.error("Failed to parse user from localStorage", error);
         localStorage.removeItem("koodoreader_user");
+        localStorage.removeItem("koodoreader_token");
       }
     }
   }, []);
@@ -54,6 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem("koodoreader_user");
+    localStorage.removeItem("koodoreader_token");
   };
 
   const value = {
