@@ -4,6 +4,7 @@ const { check, validationResult } = require('express-validator');
 const auth = require('../middleware/auth');
 const Review = require('../models/Review');
 const Book = require('../models/Book');
+const LoggingService = require('../services/loggingService');
 
 // @route   POST api/reviews/:bookId
 // @desc    Add a review for a book
@@ -31,6 +32,26 @@ router.post('/:bookId', [auth, [
     });
 
     const review = await newReview.save();
+
+    // Log WRITE_REVIEW and RATE_BOOK activities
+    try {
+      await Promise.all([
+        LoggingService.logActivity(req.user.id, 'WRITE_REVIEW', {
+          bookId: req.params.bookId,
+          reviewContent: req.body.comment,
+          ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
+          userAgent: req.headers['user-agent'],
+        }),
+        LoggingService.logActivity(req.user.id, 'RATE_BOOK', {
+          bookId: req.params.bookId,
+          rating: req.body.rating,
+          ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
+          userAgent: req.headers['user-agent'],
+        })
+      ]);
+    } catch (logErr) {
+      console.error('Error logging review:', logErr);
+    }
 
     res.json(review);
   } catch (err) {
