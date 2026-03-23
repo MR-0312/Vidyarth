@@ -6,6 +6,7 @@ const { check, validationResult } = require('express-validator');
 const auth = require('../middleware/auth');
 const upload = require('../middleware/upload');
 const User = require('../models/User');
+const LoggingService = require('../services/loggingService');
 
 // @route   POST api/users/register
 // @desc    Register a user
@@ -151,6 +152,16 @@ router.put('/profile', [auth,
     }
 
     await user.save();
+
+    // Log UPDATE_PROFILE activity
+    try {
+      await LoggingService.logActivity(req.user.id, 'UPDATE_PROFILE', {
+        ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
+        userAgent: req.headers['user-agent'],
+      });
+    } catch (logErr) {
+      console.error('Error logging profile update:', logErr);
+    }
 
     res.json(user);
   } catch (err) {

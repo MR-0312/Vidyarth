@@ -5,6 +5,7 @@ const auth = require('../middleware/auth');
 const upload = require('../middleware/upload');
 const Book = require('../models/Book');
 const User = require('../models/User');
+const LoggingService = require('../services/loggingService');
 
 // @route   GET api/books
 // @desc    Get all books with pagination and optional category filter
@@ -19,6 +20,19 @@ router.get('/', async (req, res) => {
     let query = {};
     if (category) {
       query.categories = category;
+      
+      // Log category filter activity if user is authenticated
+      if (req.user?.id) {
+        try {
+          await LoggingService.logActivity(req.user.id, 'FILTER_CATEGORY', {
+            category,
+            ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
+            userAgent: req.headers['user-agent'],
+          });
+        } catch (logErr) {
+          console.error('Error logging category filter:', logErr);
+        }
+      }
     }
 
     const total = await Book.countDocuments(query);
@@ -85,6 +99,19 @@ router.get('/:id', async (req, res) => {
     
     if (!book) {
       return res.status(404).json({ msg: 'Book not found' });
+    }
+
+    // Log VIEW_BOOK activity if user is authenticated
+    if (req.user?.id) {
+      try {
+        await LoggingService.logActivity(req.user.id, 'VIEW_BOOK', {
+          bookId: book._id,
+          ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
+          userAgent: req.headers['user-agent'],
+        });
+      } catch (logErr) {
+        console.error('Error logging book view:', logErr);
+      }
     }
 
     res.json(book);
@@ -185,6 +212,20 @@ router.get('/search', async (req, res) => {
 
     if (category) {
       searchQuery.categories = category;
+    }
+
+    // Log SEARCH activity if user is authenticated
+    if (req.user?.id && query) {
+      try {
+        await LoggingService.logActivity(req.user.id, 'SEARCH', {
+          searchQuery: query,
+          category,
+          ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
+          userAgent: req.headers['user-agent'],
+        });
+      } catch (logErr) {
+        console.error('Error logging search:', logErr);
+      }
     }
 
     const total = await Book.countDocuments(searchQuery);

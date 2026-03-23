@@ -3,6 +3,7 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const User = require('../models/User');
 const Book = require('../models/Book');
+const LoggingService = require('../services/loggingService');
 
 // @route   POST api/favorites/:bookId
 // @desc    Add a book to user's favorites
@@ -23,6 +24,17 @@ router.post('/:bookId', auth, async (req, res) => {
     user.favorites.push(book._id);
     await user.save();
 
+    // Log ADD_FAVORITE activity
+    try {
+      await LoggingService.logActivity(req.user.id, 'ADD_FAVORITE', {
+        bookId: book._id,
+        ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
+        userAgent: req.headers['user-agent'],
+      });
+    } catch (logErr) {
+      console.error('Error logging add favorite:', logErr);
+    }
+
     res.json(user.favorites);
   } catch (err) {
     console.error(err.message);
@@ -42,6 +54,17 @@ router.delete('/:bookId', auth, async (req, res) => {
     );
 
     await user.save();
+
+    // Log REMOVE_FAVORITE activity
+    try {
+      await LoggingService.logActivity(req.user.id, 'REMOVE_FAVORITE', {
+        bookId: req.params.bookId,
+        ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
+        userAgent: req.headers['user-agent'],
+      });
+    } catch (logErr) {
+      console.error('Error logging remove favorite:', logErr);
+    }
 
     res.json(user.favorites);
   } catch (err) {
