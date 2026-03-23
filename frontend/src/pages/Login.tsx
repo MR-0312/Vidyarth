@@ -79,6 +79,40 @@ const Login = () => {
         position: "relative",
       }}
     >
+      {/* Back to Home Button */}
+      <button
+        onClick={() => navigate("/")}
+        title="Back to Home"
+        style={{
+          position: "absolute",
+          top: "16px",
+          left: "16px",
+          zIndex: 10,
+          background: "none",
+          border: "1px solid var(--border-color)",
+          borderRadius: "20px",
+          padding: "6px 12px",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+          color: "var(--text-primary)",
+          fontSize: "14px",
+          backgroundColor: "var(--bg-elevated)",
+        }}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M19 12H5M12 19l-7-7 7-7"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        Home
+      </button>
+
       {/* Theme Toggle */}
       <button
         onClick={toggleTheme}
