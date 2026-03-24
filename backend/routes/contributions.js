@@ -60,16 +60,11 @@ router.post(
         author: author.trim()
       });
 
-      let contributionType = 'new';
       let book;
 
       if (existingBook) {
-        // Book already exists - this is a duplicate contribution
-        contributionType = 'duplicate';
+        // Book already exists - reuse existing book
         book = existingBook;
-        // Optionally increment contributor count for duplicates
-        // existingBook.contributorCount += 1;
-        // await existingBook.save();
       } else {
         // Step 2: Create new book in Books collection
         const newBook = new Book({
@@ -80,23 +75,16 @@ router.post(
           coverImage: req.files.cover[0].path,
           eBookFile: ebookPath,
           fileFormat,
-          status: 'pending'  // Book starts as pending until contribution is approved
+          status: 'pending'
         });
 
         book = await newBook.save();
       }
 
       // Step 3: Create contribution record linking to the book
-      const ipAddress = req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress;
-      const userAgent = req.headers['user-agent'];
-
       const newContribution = new Contribution({
         bookId: book._id,
-        userId: null,  // Anonymous contribution
-        contributionType,
-        ipAddress,
-        userAgent,
-        status: 'pending'
+        userId: null
       });
 
       const contribution = await newContribution.save();
@@ -107,14 +95,11 @@ router.post(
       // Log CONTRIBUTE activity (anonymous user)
       try {
         await LoggingService.logActivity('anonymous', 'CONTRIBUTE', {
-          ipAddress,
-          userAgent,
           metadata: {
             title: book.title,
             author: book.author,
             bookId: book._id,
-            contributionId: contribution._id,
-            contributionType
+            contributionId: contribution._id
           }
         });
       } catch (logErr) {
@@ -122,14 +107,12 @@ router.post(
       }
 
       res.json({
-        message: 'Thank you for your contribution! Our team will review it shortly.',
+        message: 'Thank you for your contribution!',
         contribution: {
           id: contribution._id,
           bookId: book._id,
           title: book.title,
-          author: book.author,
-          status: contribution.status,
-          contributionType
+          author: book.author
         }
       });
     } catch (err) {
@@ -139,115 +122,28 @@ router.post(
   }
 );
 
+// @route   GET api/contributions
+// @desc    Get all contributions with book details
+// @access  Public
+router.get('/', async (req, res) => {
+  try {
+    const contributions = await Contribution.find()
+      .populate('bookId')
+      .sort({ date: -1 });
+    res.json(contributions);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server Error' });
+  }
+});
+
 // @route   GET api/contributions/count
-// @desc    Get total approved books from contributions
+// @desc    Get total contributions count
 // @access  Public
 router.get('/count', async (req, res) => {
   try {
-    const count = await Contribution.countDocuments({ status: 'approved' });
+    const count = await Contribution.countDocuments();
     res.json({ totalContributions: count });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ error: 'Server Error' });
-  }
-});
-
-// @route   GET api/contributions/pending
-// @desc    Get all pending contributions with book details (admin view)
-// @access  Private (admin only)
-router.get('/pending', async (req, res) => {
-  try {
-    const contributions = await Contribution.find({ status: 'pending' })
-      .populate('bookId')
-      .sort({ date: -1 });
-    res.json(contributions);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ error: 'Server Error' });
-  }
-});
-
-// @route   GET api/contributions/approved
-// @desc    Get all approved contributions with book details (admin view)
-// @access  Private (admin only)
-router.get('/approved', async (req, res) => {
-  try {
-    const contributions = await Contribution.find({ status: 'approved' })
-      .populate('bookId')
-      .sort({ date: -1 });
-    res.json(contributions);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ error: 'Server Error' });
-  }
-});
-
-// @route   PUT api/contributions/:id/approve
-// @desc    Approve a contribution and update book status
-// @access  Private (admin only)
-router.put('/:id/approve', async (req, res) => {
-  try {
-    const contribution = await Contribution.findById(req.params.id).populate('bookId');
-
-    if (!contribution) {
-      return res.status(404).json({ msg: 'Contribution not found' });
-    }
-
-    // Update contribution status
-    contribution.status = 'approved';
-    contribution.resolvedAt = new Date();
-    await contribution.save();
-
-    // Update book status to approved
-    if (contribution.bookId) {
-      contribution.bookId.status = 'approved';
-      await contribution.bookId.save();
-    }
-
-    res.json({
-      message: 'Contribution approved and book published',
-      contribution
-    });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ error: 'Server Error' });
-  }
-});
-
-// @route   PUT api/contributions/:id/reject
-// @desc    Reject a contribution
-// @access  Private (admin only)
-router.put('/:id/reject', [
-  check('reason', 'Rejection reason is required').not().isEmpty()
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  try {
-    const contribution = await Contribution.findById(req.params.id).populate('bookId');
-
-    if (!contribution) {
-      return res.status(404).json({ msg: 'Contribution not found' });
-    }
-
-    // Update contribution status
-    contribution.status = 'rejected';
-    contribution.adminNotes = req.body.reason;
-    contribution.resolvedAt = new Date();
-    await contribution.save();
-
-    // Update book status to rejected
-    if (contribution.bookId) {
-      contribution.bookId.status = 'rejected';
-      await contribution.bookId.save();
-    }
-
-    res.json({
-      message: 'Contribution rejected',
-      contribution
-    });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: 'Server Error' });
