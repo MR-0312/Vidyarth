@@ -3,6 +3,7 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const upload = require('../middleware/upload');
 const Contribution = require('../models/Contribution');
+const LoggingService = require('../services/loggingService');
 
 // @route   POST api/contributions
 // @desc    Submit a file contribution (anonymous)
@@ -53,6 +54,21 @@ router.post(
       });
 
       const contribution = await newContribution.save();
+
+      // Log CONTRIBUTE activity (anonymous user)
+      try {
+        await LoggingService.logActivity('anonymous', 'CONTRIBUTE', {
+          ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
+          userAgent: req.headers['user-agent'],
+          metadata: {
+            title: contribution.title,
+            author: contribution.author,
+            contributionId: contribution._id
+          }
+        });
+      } catch (logErr) {
+        console.error('Error logging contribution:', logErr);
+      }
 
       res.json({
         message: 'Thank you for your contribution! Our team will review it shortly.',

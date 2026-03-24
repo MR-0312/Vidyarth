@@ -98,6 +98,18 @@ router.post('/', [auth, upload.fields([
     });
 
     const book = await newBook.save();
+
+    // Log ADD_BOOK activity
+    try {
+      await LoggingService.logActivity(req.user.id, 'ADD_BOOK', {
+        bookId: book._id,
+        ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
+        userAgent: req.headers['user-agent'],
+      });
+    } catch (logErr) {
+      console.error('Error logging add book:', logErr);
+    }
+
     res.json(book);
   } catch (err) {
     console.error(err.message);
@@ -185,6 +197,17 @@ router.put('/:id', [auth, upload.fields([
 
     await book.save();
 
+    // Log UPDATE_BOOK activity
+    try {
+      await LoggingService.logActivity(req.user.id, 'UPDATE_BOOK', {
+        bookId: book._id,
+        ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
+        userAgent: req.headers['user-agent'],
+      });
+    } catch (logErr) {
+      console.error('Error logging update book:', logErr);
+    }
+
     res.json(book);
   } catch (err) {
     console.error(err.message);
@@ -203,7 +226,18 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(404).json({ msg: 'Book not found' });
     }
 
-    await book.remove();
+    await Book.deleteOne({ _id: req.params.id });
+
+    // Log DELETE_BOOK activity
+    try {
+      await LoggingService.logActivity(req.user.id, 'DELETE_BOOK', {
+        bookId: req.params.id,
+        ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
+        userAgent: req.headers['user-agent'],
+      });
+    } catch (logErr) {
+      console.error('Error logging delete book:', logErr);
+    }
 
     res.json({ msg: 'Book removed' });
   } catch (err) {
@@ -284,6 +318,16 @@ router.get('/recommend', auth, async (req, res) => {
     })
     .sort({ averageRating: -1 })
     .limit(10);
+
+    // Log GET_RECOMMENDATIONS activity
+    try {
+      await LoggingService.logActivity(req.user.id, 'GET_RECOMMENDATIONS', {
+        ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
+        userAgent: req.headers['user-agent'],
+      });
+    } catch (logErr) {
+      console.error('Error logging recommendations:', logErr);
+    }
 
     res.json(recommendedBooks);
   } catch (err) {

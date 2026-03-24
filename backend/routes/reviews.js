@@ -69,6 +69,19 @@ router.get('/:bookId', async (req, res) => {
       .populate('user', ['username'])
       .sort({ date: -1 });
 
+    // Log VIEW_REVIEWS activity if user is authenticated
+    if (req.user?.id) {
+      try {
+        await LoggingService.logActivity(req.user.id, 'VIEW_REVIEWS', {
+          bookId: req.params.bookId,
+          ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
+          userAgent: req.headers['user-agent'],
+        });
+      } catch (logErr) {
+        console.error('Error logging view reviews:', logErr);
+      }
+    }
+
     res.json(reviews);
   } catch (err) {
     console.error(err.message);

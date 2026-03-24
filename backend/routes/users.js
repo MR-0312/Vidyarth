@@ -96,8 +96,21 @@ router.post('/login', [
       payload,
       process.env.JWT_SECRET,
       { expiresIn: '1h' },
-      (err, token) => {
+      async (err, token) => {
         if (err) throw err;
+
+        // Log LOGIN activity
+        try {
+          await LoggingService.logActivity(user.id, 'LOGIN', {
+            sessionId: require('uuid').v4(),
+            ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
+            userAgent: req.headers['user-agent'],
+            deviceType: /mobile/i.test(req.headers['user-agent'] || '') ? 'MOBILE' : 'WEB',
+          });
+        } catch (logErr) {
+          console.error('Error logging login activity:', logErr);
+        }
+
         res.json({ token });
       }
     );
@@ -164,6 +177,28 @@ router.put('/profile', [auth,
     }
 
     res.json(user);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   POST api/users/logout
+// @desc    Logout user
+// @access  Private
+router.post('/logout', auth, async (req, res) => {
+  try {
+    // Log LOGOUT activity
+    try {
+      await LoggingService.logActivity(req.user.id, 'LOGOUT', {
+        ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
+        userAgent: req.headers['user-agent'],
+      });
+    } catch (logErr) {
+      console.error('Error logging logout activity:', logErr);
+    }
+
+    res.json({ msg: 'Logged out successfully' });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
