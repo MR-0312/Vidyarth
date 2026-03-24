@@ -38,6 +38,12 @@ const BookSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  // Track how many contributions led to this book
+  // (useful for giving credit to multiple contributors)
+  contributorCount: {
+    type: Number,
+    default: 1
+  },
   status: {
     type: String,
     enum: ['pending', 'approved', 'rejected'],
