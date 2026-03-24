@@ -21,6 +21,11 @@ const BookSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  fileFormat: {
+    type: String,
+    enum: ['pdf', 'epub'],
+    required: true
+  },
   categories: [{
     type: String,
     required: true
@@ -32,6 +37,11 @@ const BookSchema = new mongoose.Schema({
   totalRatings: {
     type: Number,
     default: 0
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending'
   },
   date: {
     type: Date,
