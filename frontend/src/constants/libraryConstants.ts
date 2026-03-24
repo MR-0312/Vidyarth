@@ -20,6 +20,10 @@ export const SIDEBAR_ITEMS = [
     id: "trash",
     label: "Trash",
   },
+  {
+    id: "contribute",
+    label: "Contribute",
+  },
 ];
 
 // Sample books data

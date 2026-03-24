@@ -28,6 +28,7 @@ app.use("/api/books", require("./routes/books"));
 app.use("/api/favorites", require("./routes/favorites"));
 app.use("/api/reviews", require("./routes/reviews"));
 app.use("/api/analytics", require("./routes/analytics"));
+app.use("/api/contributions", require("./routes/contributions"));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
