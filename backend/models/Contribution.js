@@ -1,46 +1,21 @@
 const mongoose = require('mongoose');
 
 const ContributionSchema = new mongoose.Schema({
-  title: {
-    type: String,
+  // Reference to the Book that was contributed
+  bookId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Book',
     required: true
   },
-  author: {
-    type: String,
-    required: true
+  
+  // User who made the contribution (null for anonymous)
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
   },
-  description: {
-    type: String,
-    required: true
-  },
-  categories: [{
-    type: String,
-    required: true
-  }],
-  coverImage: {
-    type: String,
-    required: true
-  },
-  eBookFile: {
-    type: String,
-    required: true
-  },
-  fileFormat: {
-    type: String,
-    enum: ['pdf', 'epub'],
-    required: true
-  },
-  // Anonymous tracking - only count, no user information
-  contributionCount: {
-    type: Number,
-    default: 1
-  },
-  // Status: pending (awaiting admin approval), approved, rejected
-  status: {
-    type: String,
-    enum: ['pending', 'approved', 'rejected'],
-    default: 'pending'
-  },
+  
+  // Timestamp of contribution
   date: {
     type: Date,
     default: Date.now

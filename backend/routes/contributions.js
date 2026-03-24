@@ -3,7 +3,16 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const upload = require('../middleware/upload');
 const Contribution = require('../models/Contribution');
+const Book = require('../models/Book');
 const LoggingService = require('../services/loggingService');
+
+// Helper: derive file format from uploaded ebook path
+function getFileFormat(filePath) {
+  const lower = filePath.toLowerCase();
+  if (lower.endsWith('.pdf')) return 'pdf';
+  if (lower.endsWith('.epub')) return 'epub';
+  return null;
+}
 
 // @route   POST api/contributions
 // @desc    Submit a file contribution (anonymous)
@@ -40,29 +49,56 @@ router.post(
 
       // Determine file format from the uploaded ebook
       const ebookPath = req.files.ebook[0].path;
-      const fileFormat = ebookPath.toLowerCase().endsWith('.pdf') ? 'pdf' : 'epub';
+      const fileFormat = getFileFormat(ebookPath);
+      if (!fileFormat) {
+        return res.status(400).json({ error: 'Unsupported ebook file format. Only PDF and EPUB are allowed.' });
+      }
 
+      // Step 1: Check if a book with this title and author already exists
+      let existingBook = await Book.findOne({ 
+        title: title.trim(),
+        author: author.trim()
+      });
+
+      let book;
+
+      if (existingBook) {
+        // Book already exists - reuse existing book
+        book = existingBook;
+      } else {
+        // Step 2: Create new book in Books collection
+        const newBook = new Book({
+          title,
+          author,
+          description,
+          categories: Array.isArray(categories) ? categories : [categories],
+          coverImage: req.files.cover[0].path,
+          eBookFile: ebookPath,
+          fileFormat,
+          status: 'pending'
+        });
+
+        book = await newBook.save();
+      }
+
+      // Step 3: Create contribution record linking to the book
       const newContribution = new Contribution({
-        title,
-        author,
-        description,
-        categories: Array.isArray(categories) ? categories : [categories],
-        coverImage: req.files.cover[0].path,
-        eBookFile: ebookPath,
-        fileFormat,
-        status: 'pending'
+        bookId: book._id,
+        userId: null
       });
 
       const contribution = await newContribution.save();
 
+      // Step 4: Populate book data for response
+      await contribution.populate('bookId');
+
       // Log CONTRIBUTE activity (anonymous user)
       try {
         await LoggingService.logActivity('anonymous', 'CONTRIBUTE', {
-          ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
-          userAgent: req.headers['user-agent'],
           metadata: {
-            title: contribution.title,
-            author: contribution.author,
+            title: book.title,
+            author: book.author,
+            bookId: book._id,
             contributionId: contribution._id
           }
         });
@@ -71,11 +107,12 @@ router.post(
       }
 
       res.json({
-        message: 'Thank you for your contribution! Our team will review it shortly.',
+        message: 'Thank you for your contribution!',
         contribution: {
           id: contribution._id,
-          title: contribution.title,
-          status: contribution.status
+          bookId: book._id,
+          title: book.title,
+          author: book.author
         }
       });
     } catch (err) {
@@ -85,27 +122,28 @@ router.post(
   }
 );
 
-// @route   GET api/contributions/count
-// @desc    Get total contributions count
+// @route   GET api/contributions
+// @desc    Get all contributions with book details
 // @access  Public
-router.get('/count', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const count = await Contribution.countDocuments({ status: 'approved' });
-    res.json({ totalContributions: count });
+    const contributions = await Contribution.find()
+      .populate('bookId')
+      .sort({ date: -1 });
+    res.json(contributions);
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: 'Server Error' });
   }
 });
 
-// @route   GET api/contributions/approved
-// @desc    Get all approved contributions (admin view)
-// @access  Private (admin only)
-router.get('/approved', async (req, res) => {
+// @route   GET api/contributions/count
+// @desc    Get total contributions count
+// @access  Public
+router.get('/count', async (req, res) => {
   try {
-    const contributions = await Contribution.find({ status: 'approved' })
-      .sort({ date: -1 });
-    res.json(contributions);
+    const count = await Contribution.countDocuments();
+    res.json({ totalContributions: count });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: 'Server Error' });
