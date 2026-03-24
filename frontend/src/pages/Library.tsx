@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import Sidebar from "../components/Sidebar";
+import UploadModal from "../components/UploadModal";
 import { SIDEBAR_ITEMS, SAMPLE_BOOKS } from "../constants/libraryConstants";
 import {
   BooksIcon,
@@ -16,6 +17,7 @@ import {
   ListIcon,
   LightIcon,
   DarkIcon,
+  UploadIcon,
 } from "../utils/icons";
 
 const sidebarItemsWithIcons = SIDEBAR_ITEMS.map((item) => ({
@@ -29,6 +31,8 @@ const sidebarItemsWithIcons = SIDEBAR_ITEMS.map((item) => ({
       <NotesIcon />
     ) : item.id === "highlights" ? (
       <HighlightsIcon />
+    ) : item.id === "contribute" ? (
+      <UploadIcon />
     ) : (
       <TrashIcon />
     ),
@@ -42,6 +46,15 @@ const Library = () => {
   const [activeNavItem, setActiveNavItem] = useState("books");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState("recent");
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
+  const handleSidebarItemClick = (itemId: string) => {
+    if (itemId === "contribute") {
+      setIsUploadModalOpen(true);
+    } else {
+      setActiveNavItem(itemId);
+    }
+  };
 
   const containerStyles: React.CSSProperties = {
     display: "flex",
@@ -96,7 +109,7 @@ const Library = () => {
         isOpen={sidebarOpen}
         items={sidebarItemsWithIcons}
         activeItem={activeNavItem}
-        onItemClick={setActiveNavItem}
+        onItemClick={handleSidebarItemClick}
       />
 
       {/* Main content */}
@@ -293,6 +306,16 @@ const Library = () => {
           </div>
         </main>
       </div>
+
+      {/* Upload Modal */}
+      <UploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onSuccess={() => {
+          // Optionally refresh books or show a success message
+          console.log("File uploaded successfully");
+        }}
+      />
     </div>
   );
 };
