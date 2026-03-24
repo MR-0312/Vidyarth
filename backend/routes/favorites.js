@@ -79,6 +79,17 @@ router.delete('/:bookId', auth, async (req, res) => {
 router.get('/', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).populate('favorites');
+    
+    // Log GET_FAVORITES activity
+    try {
+      await LoggingService.logActivity(req.user.id, 'GET_FAVORITES', {
+        ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
+        userAgent: req.headers['user-agent'],
+      });
+    } catch (logErr) {
+      console.error('Error logging get favorites:', logErr);
+    }
+    
     res.json(user.favorites);
   } catch (err) {
     console.error(err.message);
