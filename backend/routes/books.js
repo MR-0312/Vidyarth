@@ -7,6 +7,14 @@ const Book = require('../models/Book');
 const User = require('../models/User');
 const LoggingService = require('../services/loggingService');
 
+// Helper: derive file format from uploaded ebook path
+function getFileFormat(filePath) {
+  const lower = filePath.toLowerCase();
+  if (lower.endsWith('.pdf')) return 'pdf';
+  if (lower.endsWith('.epub')) return 'epub';
+  return null;
+}
+
 // @route   GET api/books
 // @desc    Get all books with pagination and optional category filter
 // @access  Public
@@ -73,13 +81,20 @@ router.post('/', [auth, upload.fields([
   const { title, author, description, categories } = req.body;
 
   try {
+    const ebookPath = req.files['ebook'][0].path;
+    const fileFormat = getFileFormat(ebookPath);
+    if (!fileFormat) {
+      return res.status(400).json({ error: 'Unsupported ebook file format. Only PDF and EPUB are allowed.' });
+    }
+
     const newBook = new Book({
       title,
       author,
       description,
       categories,
       coverImage: req.files['cover'][0].path,
-      eBookFile: req.files['ebook'][0].path
+      eBookFile: ebookPath,
+      fileFormat
     });
 
     const book = await newBook.save();
@@ -171,7 +186,13 @@ router.put('/:id', [auth, upload.fields([
       book.coverImage = req.files['cover'][0].path;
     }
     if (req.files['ebook']) {
-      book.eBookFile = req.files['ebook'][0].path;
+      const ebookPath = req.files['ebook'][0].path;
+      const fileFormat = getFileFormat(ebookPath);
+      if (!fileFormat) {
+        return res.status(400).json({ error: 'Unsupported ebook file format. Only PDF and EPUB are allowed.' });
+      }
+      book.eBookFile = ebookPath;
+      book.fileFormat = fileFormat;
     }
 
     await book.save();
