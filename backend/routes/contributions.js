@@ -50,6 +50,9 @@ router.post(
         return res.status(400).json({ error: 'At least one category is required' });
       }
 
+      // Check if this should be tracked as a contribution
+      const trackAsContribution = req.body.trackAsContribution === 'true' || req.body.trackAsContribution === true;
+
       // Determine file format from the uploaded ebook
       const ebookPath = req.files.ebook[0].path;
       const fileFormat = getFileFormat(ebookPath);
@@ -85,38 +88,47 @@ router.post(
         book = await newBook.save();
       }
 
-      // Step 3: Create contribution record linking to the book
-      // Capture userId from authenticated requests, otherwise null for anonymous
-      const newContribution = new Contribution({
-        bookId: book._id,
-        userId: req.user?.id || null
-      });
-
-      const contribution = await newContribution.save();
-
-      // Step 4: Populate book data for response
-      await contribution.populate('bookId');
-
-      // Log CONTRIBUTE activity
-      try {
-        await LoggingService.logActivity(req.user?.id || null, 'CONTRIBUTE', {
+      // Step 3: Create contribution record linking to the book (only if tracked)
+      let contribution = null;
+      if (trackAsContribution) {
+        const newContribution = new Contribution({
           bookId: book._id,
-          metadata: {
-            title: book.title,
-            author: book.author,
-            contributionId: contribution._id
-          }
+          userId: req.user?.id || null
         });
-      } catch (logErr) {
-        console.error('Error logging contribution activity:', logErr);
-        // Don't fail the contribution if logging fails
+
+        contribution = await newContribution.save();
+
+        // Step 4: Populate book data for response
+        await contribution.populate('bookId');
+
+        // Log CONTRIBUTE activity
+        try {
+          await LoggingService.logActivity(req.user?.id || null, 'CONTRIBUTE', {
+            bookId: book._id,
+            metadata: {
+              title: book.title,
+              author: book.author,
+              contributionId: contribution._id
+            }
+          });
+        } catch (logErr) {
+          console.error('Error logging contribution activity:', logErr);
+          // Don't fail the contribution if logging fails
+        }
       }
 
       res.json({
-        message: 'Thank you for your contribution!',
-        contribution: {
+        message: trackAsContribution 
+          ? 'Thank you for your contribution!' 
+          : 'Book uploaded successfully!',
+        contribution: contribution ? {
           id: contribution._id,
           bookId: book._id,
+          title: book.title,
+          author: book.author
+        } : null,
+        book: {
+          id: book._id,
           title: book.title,
           author: book.author
         }

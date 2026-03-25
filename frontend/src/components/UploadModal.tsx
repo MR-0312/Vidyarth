@@ -145,6 +145,8 @@ const UploadModal = ({ isOpen, onClose, onSuccess }: UploadModalProps) => {
       submitFormData.append("title", formData.title);
       submitFormData.append("author", formData.author);
       submitFormData.append("description", formData.description);
+      // Flag to indicate whether to track this as a contribution
+      submitFormData.append("trackAsContribution", String(!asAnonymous));
 
       // Add categories as array
       formData.categories.forEach((cat) => {
