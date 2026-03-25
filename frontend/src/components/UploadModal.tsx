@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../context/AuthContext";
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ const CATEGORIES = [
 
 const UploadModal = ({ isOpen, onClose, onSuccess }: UploadModalProps) => {
   const { theme } = useTheme();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     title: "",
     author: "",
@@ -35,6 +37,8 @@ const UploadModal = ({ isOpen, onClose, onSuccess }: UploadModalProps) => {
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const [showAnonymityChoice, setShowAnonymityChoice] = useState(false);
+  const [uploadAsAnonymous, setUploadAsAnonymous] = useState(false);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -122,7 +126,19 @@ const UploadModal = ({ isOpen, onClose, onSuccess }: UploadModalProps) => {
       return;
     }
 
+    // If user is logged in, ask about anonymity
+    if (user) {
+      setShowAnonymityChoice(true);
+      return;
+    }
+
+    // If not logged in, submit directly (as anonymous)
+    await submitContribution(false);
+  };
+
+  const submitContribution = async (asAnonymous: boolean) => {
     setIsLoading(true);
+    setShowAnonymityChoice(false);
 
     try {
       const submitFormData = new FormData();
@@ -142,9 +158,19 @@ const UploadModal = ({ isOpen, onClose, onSuccess }: UploadModalProps) => {
         submitFormData.append("ebook", formData.ebook);
       }
 
+      const headers: any = {};
+      // Only send token if user is logged in AND chose not to be anonymous
+      if (!asAnonymous && user) {
+        const token = localStorage.getItem("koodoreader_token");
+        if (token) {
+          headers["x-auth-token"] = token;
+        }
+      }
+
       const response = await fetch("http://localhost:8080/api/contributions", {
         method: "POST",
         body: submitFormData,
+        headers: headers,
       });
 
       if (response.ok) {
@@ -479,8 +505,9 @@ const UploadModal = ({ isOpen, onClose, onSuccess }: UploadModalProps) => {
               color: isDark ? "#aaa" : "#333",
             }}
           >
-            📝 Your contribution will be anonymous. We won't store information
-            about who contributed what, only the count of contributions.
+            {user
+              ? "📝 You can choose to contribute anonymously or with your account."
+              : "📝 Login to get credit for your contributions!"}
           </div>
 
           {/* Buttons */}
@@ -507,6 +534,113 @@ const UploadModal = ({ isOpen, onClose, onSuccess }: UploadModalProps) => {
           </div>
         </form>
       </div>
+
+      {/* Anonymity Choice Dialog */}
+      {showAnonymityChoice && user && (
+        <div style={modalOverlayStyles} onClick={() => setShowAnonymityChoice(false)}>
+          <div
+            style={modalContentStyles}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={titleStyles}>Upload Method</h2>
+            <p
+              style={{
+                fontSize: "16px",
+                color: textColor,
+                marginBottom: "24px",
+                lineHeight: "1.5",
+              }}
+            >
+              How would you like to contribute this book?
+            </p>
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px",
+                marginBottom: "24px",
+              }}
+            >
+              {/* Anonymous Option */}
+              <button
+                onClick={() => submitContribution(true)}
+                style={{
+                  padding: "16px",
+                  border: `2px solid ${inputBorder}`,
+                  borderRadius: "8px",
+                  backgroundColor: "transparent",
+                  color: textColor,
+                  cursor: "pointer",
+                  textAlign: "left",
+                  transition: "all 0.2s ease",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = accentColor;
+                  e.currentTarget.style.backgroundColor = isDark ? "#2a2a2a" : "#f5f5f5";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = inputBorder;
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }}
+              >
+                <div style={{ fontWeight: "600", marginBottom: "4px" }}>📝 Upload Anonymously</div>
+                <div
+                  style={{
+                    fontSize: "12px",
+                    color: isDark ? "#888" : "#666",
+                  }}
+                >
+                  Your contribution won't be linked to your account
+                </div>
+              </button>
+
+              {/* With Account Option */}
+              <button
+                onClick={() => submitContribution(false)}
+                style={{
+                  padding: "16px",
+                  border: `2px solid ${accentColor}`,
+                  borderRadius: "8px",
+                  backgroundColor: accentColor + "10",
+                  color: textColor,
+                  cursor: "pointer",
+                  textAlign: "left",
+                  transition: "all 0.2s ease",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = accentColor + "20";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = accentColor + "10";
+                }}
+              >
+                <div style={{ fontWeight: "600", marginBottom: "4px", color: accentColor }}>✓ Upload as {user.name}</div>
+                <div
+                  style={{
+                    fontSize: "12px",
+                    color: isDark ? "#888" : "#666",
+                  }}
+                >
+                  Your contribution will be linked to your account
+                </div>
+              </button>
+            </div>
+
+            {/* Cancel Button */}
+            <button
+              onClick={() => setShowAnonymityChoice(false)}
+              style={buttonStyles("secondary")}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

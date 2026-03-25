@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import Sidebar from "../components/Sidebar";
@@ -31,6 +31,8 @@ const sidebarItemsWithIcons = SIDEBAR_ITEMS.map((item) => ({
       <NotesIcon />
     ) : item.id === "highlights" ? (
       <HighlightsIcon />
+    ) : item.id === "contributions" ? (
+      <UploadIcon />
     ) : item.id === "contribute" ? (
       <UploadIcon />
     ) : (
@@ -47,6 +49,70 @@ const Library = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState("recent");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [userContributions, setUserContributions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch user contributions when the contributions tab is selected
+  useEffect(() => {
+    if (activeNavItem === "contributions" && user) {
+      fetchUserContributions();
+    }
+  }, [activeNavItem, user]);
+
+  const fetchUserContributions = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem("koodoreader_token");
+      if (!token) {
+        setError("Please login to view your contributions");
+        setIsLoading(false);
+        return;
+      }
+
+      const response = await fetch("http://localhost:8080/api/contributions/me", {
+        headers: {
+          "x-auth-token": token,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          setError("Please login to view your contributions");
+        } else {
+          setError("Failed to load contributions");
+        }
+        throw new Error("Failed to fetch contributions");
+      }
+
+      const data = await response.json();
+      // Transform contributions to display book data
+      const books = data.map((contribution: any) => {
+        const coverPath = contribution.bookId?.coverImage || "";
+        // Normalize Windows paths to URL format
+        const normalizedPath = coverPath.replace(/\\/g, "/");
+        const coverUrl = normalizedPath 
+          ? `http://localhost:8080/${normalizedPath}` 
+          : "https://covers.openlibrary.org/b/id/12860656-L.jpg";
+        
+        return {
+          id: contribution._id,
+          title: contribution.bookId?.title || "Unknown",
+          author: contribution.bookId?.author || "Unknown",
+          cover: coverUrl,
+          format: (contribution.bookId?.fileFormat || "pdf").toUpperCase(),
+          progress: 0,
+        };
+      });
+      setUserContributions(books);
+    } catch (err) {
+      console.error("Error fetching contributions:", err);
+      setError("Failed to load contributions");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSidebarItemClick = (itemId: string) => {
     if (itemId === "contribute") {
@@ -55,6 +121,9 @@ const Library = () => {
       setActiveNavItem(itemId);
     }
   };
+
+  // Determine which books to display
+  const displayBooks = activeNavItem === "contributions" ? userContributions : SAMPLE_BOOKS;
 
   const containerStyles: React.CSSProperties = {
     display: "flex",
@@ -281,29 +350,59 @@ const Library = () => {
             overflowY: "auto",
           }}
         >
-          <div
-            style={{
-              display:
-                viewMode === "grid"
-                  ? "grid"
-                  : "flex",
-              gridTemplateColumns:
-                viewMode === "grid"
-                  ? "repeat(auto-fill, minmax(180px, 1fr))"
-                  : undefined,
-              flexDirection:
-                viewMode === "list" ? "column" : undefined,
-              gap: "30px",
-            }}
-          >
-            {SAMPLE_BOOKS.map((book) => (
-              <BookCard
-                key={book.id}
-                book={book}
-                viewMode={viewMode}
-              />
-            ))}
-          </div>
+          {/* Loading State */}
+          {activeNavItem === "contributions" && isLoading && (
+            <div style={{ textAlign: "center", color: "var(--text-muted)" }}>
+              <p>Loading your contributions...</p>
+            </div>
+          )}
+
+          {/* Error State */}
+          {activeNavItem === "contributions" && error && (
+            <div style={{ textAlign: "center", color: "#ff6b6b" }}>
+              <p>{error}</p>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {activeNavItem === "contributions" &&
+            !isLoading &&
+            userContributions.length === 0 &&
+            !error && (
+              <div style={{ textAlign: "center", color: "var(--text-muted)" }}>
+                <p>You haven't contributed any books yet.</p>
+                <p style={{ fontSize: "14px" }}>
+                  Click on "Contribute" to share your first book!
+                </p>
+              </div>
+            )}
+
+          {/* Books Grid/List */}
+          {displayBooks.length > 0 && (
+            <div
+              style={{
+                display:
+                  viewMode === "grid"
+                    ? "grid"
+                    : "flex",
+                gridTemplateColumns:
+                  viewMode === "grid"
+                    ? "repeat(auto-fill, minmax(180px, 1fr))"
+                    : undefined,
+                flexDirection:
+                  viewMode === "list" ? "column" : undefined,
+                gap: "30px",
+              }}
+            >
+              {displayBooks.map((book) => (
+                <BookCard
+                  key={book.id}
+                  book={book}
+                  viewMode={viewMode}
+                />
+              ))}
+            </div>
+          )}
         </main>
       </div>
 
@@ -312,8 +411,11 @@ const Library = () => {
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
         onSuccess={() => {
-          // Optionally refresh books or show a success message
           console.log("File uploaded successfully");
+          // Refresh contributions if the user is viewing that tab
+          if (activeNavItem === "contributions" && user) {
+            fetchUserContributions();
+          }
         }}
       />
     </div>

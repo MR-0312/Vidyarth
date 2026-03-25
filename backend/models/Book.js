@@ -44,6 +44,12 @@ const BookSchema = new mongoose.Schema({
     type: Number,
     default: 1
   },
+  // Track the original contributor (user who first submitted this book)
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
   status: {
     type: String,
     enum: ['pending', 'approved', 'rejected'],

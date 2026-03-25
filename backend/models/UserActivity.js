@@ -5,7 +5,7 @@ const userActivitySchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      default: null,
       index: true,
     },
     activityType: {
@@ -23,6 +23,7 @@ const userActivitySchema = new mongoose.Schema(
         'FILTER_CATEGORY',
         'UPDATE_PROFILE',
         'DOWNLOAD_BOOK',
+        'CONTRIBUTE',
       ],
       required: true,
       index: true,
