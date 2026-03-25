@@ -21,6 +21,10 @@ export const SIDEBAR_ITEMS = [
     label: "Trash",
   },
   {
+    id: "contributions",
+    label: "My Contributions",
+  },
+  {
     id: "contribute",
     label: "Contribute",
   },
