@@ -50,13 +50,33 @@ const Library = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState("recent");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [userContributions, setUserContributions] = useState<any[]>([]);
-  const [allLibraryBooks, setAllLibraryBooks] = useState<any[]>([]);
+  const [userContributions, setUserContributions] = useState<Array<{
+    id: string;
+    title: string;
+    author: string;
+    cover: string;
+    format: string;
+    description?: string;
+    categories?: string[];
+    rating?: number;
+    progress: number;
+  }>>([]);
+  const [allLibraryBooks, setAllLibraryBooks] = useState<Array<{
+    id: string;
+    title: string;
+    author: string;
+    cover: string;
+    format: string;
+    description?: string;
+    categories?: string[];
+    rating?: number;
+    progress?: number;
+  }>>([]);
   const [isLoadingContributions, setIsLoadingContributions] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   // Fetch all books for the library
-  const { books: dynamicBooks, loading: booksLoading, error: booksError } = useBooks({ limit: 100, autoFetch: activeNavItem === "books" });
+  const { books: dynamicBooks, loading: booksLoading } = useBooks({ limit: 100, autoFetch: activeNavItem === "books" });
 
   // Set library books when fetched
   useEffect(() => {
@@ -100,7 +120,18 @@ const Library = () => {
 
       const data = await response.json();
       // Transform contributions to display book data
-      const books = data.map((contribution: any) => {
+      const books = data.map((contribution: {
+        _id: string;
+        bookId?: {
+          title?: string;
+          author?: string;
+          description?: string;
+          coverImage?: string;
+          fileFormat?: string;
+          categories?: string[];
+          averageRating?: number;
+        };
+      }) => {
         const coverPath = contribution.bookId?.coverImage || "";
         // Normalize Windows paths to URL format
         const normalizedPath = coverPath.replace(/\\/g, "/");
@@ -114,6 +145,9 @@ const Library = () => {
           author: contribution.bookId?.author || "Unknown",
           cover: coverUrl,
           format: (contribution.bookId?.fileFormat || "pdf").toUpperCase(),
+          description: contribution.bookId?.description || "",
+          categories: contribution.bookId?.categories || [],
+          rating: contribution.bookId?.averageRating || 0,
           progress: 0,
         };
       });
@@ -452,12 +486,116 @@ interface BookCardProps {
     author: string;
     cover: string;
     format: string;
+    description?: string;
     progress?: number;
     categories?: string[];
     rating?: number;
   };
   viewMode: "grid" | "list";
 }
+
+// Helper component for category display with hoverable card
+const CategoryTags = ({ categories, maxDisplay = 2 }: { categories?: string[]; maxDisplay?: number }) => {
+  const [showCard, setShowCard] = useState(false);
+  
+  if (!categories || categories.length === 0) return null;
+
+  const displayedCategories = categories.slice(0, maxDisplay);
+  const hiddenCount = categories.length - maxDisplay;
+
+  return (
+    <div style={{ position: "relative" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "6px",
+          flexWrap: "wrap",
+          alignItems: "center",
+        }}
+        onMouseEnter={() => hiddenCount > 0 && setShowCard(true)}
+        onMouseLeave={() => setShowCard(false)}
+      >
+        {displayedCategories.map((cat, idx) => (
+          <span
+            key={idx}
+            style={{
+              fontSize: "11px",
+              color: "white",
+              padding: "3px 8px",
+              backgroundColor: "#0078ff",
+              borderRadius: "12px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {cat}
+          </span>
+        ))}
+        {hiddenCount > 0 && (
+          <span
+            style={{
+              fontSize: "11px",
+              color: "var(--text-muted)",
+              padding: "3px 6px",
+              borderRadius: "12px",
+              border: "1px solid var(--border-color)",
+              cursor: "pointer",
+              fontWeight: "600",
+            }}
+          >
+            +{hiddenCount}
+          </span>
+        )}
+      </div>
+      
+      {showCard && hiddenCount > 0 && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: "calc(100% + 8px)",
+            left: 0,
+            backgroundColor: "var(--bg-card)",
+            border: "1px solid var(--border-color)",
+            borderRadius: "8px",
+            padding: "12px 16px",
+            zIndex: 1000,
+            fontSize: "12px",
+            color: "var(--text-primary)",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+            minWidth: "200px",
+            maxWidth: "300px",
+          }}
+        >
+          <div style={{ fontWeight: "600", marginBottom: "8px", color: "var(--text-book-title)" }}>
+            All Genres ({categories.length})
+          </div>
+          <div
+            style={{
+              display: "flex",
+              gap: "6px",
+              flexWrap: "wrap",
+            }}
+          >
+            {categories.map((cat, idx) => (
+              <span
+                key={idx}
+                style={{
+                  fontSize: "11px",
+                  color: "white",
+                  padding: "4px 10px",
+                  backgroundColor: "#0078ff",
+                  borderRadius: "12px",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {cat}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const BookCard = ({ book, viewMode }: BookCardProps) => {
   if (viewMode === "list") {
@@ -468,19 +606,22 @@ const BookCard = ({ book, viewMode }: BookCardProps) => {
           borderRadius: "8px",
           overflow: "hidden",
           backgroundColor: "var(--bg-card)",
-          transition: "transform 0.2s ease",
+          transition: "transform 0.2s ease, box-shadow 0.2s ease",
           cursor: "pointer",
-          height: "150px",
+          minHeight: "180px",
           gap: "15px",
+          padding: "12px",
+          border: "1px solid var(--border-color)",
         }}
       >
         <div
           style={{
             position: "relative",
-            width: "100px",
+            width: "120px",
             flexShrink: 0,
             backgroundColor: "var(--bg-image)",
             overflow: "hidden",
+            borderRadius: "6px",
           }}
         >
           <img
@@ -495,7 +636,6 @@ const BookCard = ({ book, viewMode }: BookCardProps) => {
         </div>
         <div
           style={{
-            padding: "15px",
             display: "flex",
             flexDirection: "column",
             flex: 1,
@@ -505,9 +645,9 @@ const BookCard = ({ book, viewMode }: BookCardProps) => {
           <div>
             <h3
               style={{
-                margin: "0 0 5px 0",
+                margin: "0 0 4px 0",
                 fontSize: "16px",
-                fontWeight: "500",
+                fontWeight: "600",
                 color: "var(--text-book-title)",
               }}
             >
@@ -515,59 +655,97 @@ const BookCard = ({ book, viewMode }: BookCardProps) => {
             </h3>
             <p
               style={{
-                margin: "0",
+                margin: "0 0 8px 0",
                 fontSize: "14px",
                 color: "var(--text-muted)",
+                fontWeight: "500",
               }}
             >
               {book.author}
             </p>
+            {book.description && (
+              <p
+                style={{
+                  margin: "0 0 8px 0",
+                  fontSize: "13px",
+                  color: "var(--text-secondary)",
+                  lineHeight: "1.4",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                }}
+              >
+                {book.description}
+              </p>
+            )}
           </div>
           <div
             style={{
               display: "flex",
-              gap: "10px",
+              gap: "12px",
               alignItems: "center",
+              flexWrap: "wrap",
             }}
           >
             <span
               style={{
                 fontSize: "12px",
                 color: "var(--text-muted)",
-                padding: "2px 8px",
+                padding: "3px 10px",
                 backgroundColor: "var(--bg-elevated)",
                 borderRadius: "4px",
+                fontWeight: "500",
               }}
             >
               {book.format}
             </span>
-            {book.progress > 0 && (
+            {book.rating != null && book.rating > 0 && (
+              <span
+                style={{
+                  fontSize: "13px",
+                  color: "var(--text-primary)",
+                  fontWeight: "500",
+                }}
+              >
+                ⭐ {book.rating.toFixed(1)}
+              </span>
+            )}
+            {book.progress != null && book.progress > 0 && (
               <span
                 style={{
                   fontSize: "12px",
                   color: "var(--text-muted)",
+                  marginLeft: "auto",
                 }}
               >
                 {book.progress}% read
               </span>
             )}
           </div>
+          {book.categories && book.categories.length > 0 && (
+            <div style={{ marginTop: "8px" }}>
+              <CategoryTags categories={book.categories} maxDisplay={2} />
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
   return (
-<div
+    <div
       style={{
         display: "flex",
         flexDirection: "column",
         borderRadius: "8px",
         overflow: "hidden",
         backgroundColor: "var(--bg-card)",
-        transition: "transform 0.2s ease",
+        transition: "transform 0.2s ease, box-shadow 0.2s ease",
         cursor: "pointer",
         height: "100%",
+        border: "1px solid var(--border-color)",
       }}
     >
       <div
@@ -590,7 +768,7 @@ const BookCard = ({ book, viewMode }: BookCardProps) => {
             objectFit: "cover",
           }}
         />
-        {book.progress > 0 && (
+        {book.progress != null && book.progress > 0 && (
           <div
             style={{
               position: "absolute",
@@ -623,7 +801,7 @@ const BookCard = ({ book, viewMode }: BookCardProps) => {
           style={{
             margin: "0 0 5px 0",
             fontSize: "16px",
-            fontWeight: "500",
+            fontWeight: "600",
             color: "var(--text-book-title)",
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -636,40 +814,78 @@ const BookCard = ({ book, viewMode }: BookCardProps) => {
         </h3>
         <p
           style={{
-            margin: "0 0 10px 0",
-            fontSize: "14px",
+            margin: "0 0 8px 0",
+            fontSize: "13px",
             color: "var(--text-muted)",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
+            fontWeight: "500",
           }}
         >
           {book.author}
         </p>
+        {book.description && (
+          <p
+            style={{
+              margin: "0 0 12px 0",
+              fontSize: "12px",
+              color: "var(--text-secondary)",
+              lineHeight: "1.3",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+            }}
+          >
+            {book.description}
+          </p>
+        )}
+        {book.categories && book.categories.length > 0 && (
+          <div style={{ marginBottom: "10px" }}>
+            <CategoryTags categories={book.categories} maxDisplay={2} />
+          </div>
+        )}
         <div
           style={{
             marginTop: "auto",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            gap: "10px",
+            flexWrap: "wrap",
           }}
         >
           <span
             style={{
               fontSize: "12px",
               color: "var(--text-muted)",
-              padding: "2px 8px",
+              padding: "3px 8px",
               backgroundColor: "var(--bg-elevated)",
               borderRadius: "4px",
+              fontWeight: "500",
             }}
           >
             {book.format}
           </span>
-          {book.progress > 0 && (
+          {book.rating != null && book.rating > 0 && (
+            <span
+              style={{
+                fontSize: "13px",
+                color: "var(--text-primary)",
+                fontWeight: "500",
+              }}
+            >
+              ⭐ {book.rating.toFixed(1)}
+            </span>
+          )}
+          {book.progress != null && book.progress > 0 && (
             <span
               style={{
                 fontSize: "12px",
                 color: "var(--text-muted)",
+                marginLeft: "auto",
               }}
             >
               {book.progress}%

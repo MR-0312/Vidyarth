@@ -16,6 +16,109 @@ const categories = [
   { name: "Horror", icon: "👻", color: "#955251" },
 ];
 
+// Helper component for category display with tooltip
+const CategoryTags = ({ categories, maxDisplay = 2 }: { categories?: string[]; maxDisplay?: number }) => {
+  const [showCard, setShowCard] = useState(false);
+  
+  if (!categories || categories.length === 0) return null;
+
+  const displayedCategories = categories.slice(0, maxDisplay);
+  const hiddenCount = categories.length - maxDisplay;
+
+  return (
+    <div style={{ position: "relative" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "6px",
+          flexWrap: "wrap",
+          alignItems: "center",
+        }}
+        onMouseEnter={() => hiddenCount > 0 && setShowCard(true)}
+        onMouseLeave={() => setShowCard(false)}
+      >
+        {displayedCategories.map((cat, idx) => (
+          <span
+            key={idx}
+            style={{
+              fontSize: "11px",
+              color: "white",
+              padding: "3px 8px",
+              backgroundColor: "#0078ff",
+              borderRadius: "12px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {cat}
+          </span>
+        ))}
+        {hiddenCount > 0 && (
+          <span
+            style={{
+              fontSize: "11px",
+              color: "var(--text-muted)",
+              padding: "3px 6px",
+              borderRadius: "12px",
+              border: "1px solid var(--border-color)",
+              cursor: "pointer",
+              fontWeight: "600",
+            }}
+          >
+            +{hiddenCount}
+          </span>
+        )}
+      </div>
+      
+      {showCard && hiddenCount > 0 && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: "calc(100% + 8px)",
+            left: 0,
+            backgroundColor: "var(--bg-card)",
+            border: "1px solid var(--border-color)",
+            borderRadius: "8px",
+            padding: "12px 16px",
+            zIndex: 1000,
+            fontSize: "12px",
+            color: "var(--text-primary)",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+            minWidth: "200px",
+            maxWidth: "300px",
+          }}
+        >
+          <div style={{ fontWeight: "600", marginBottom: "8px", color: "var(--text-book-title)" }}>
+            All Genres ({categories.length})
+          </div>
+          <div
+            style={{
+              display: "flex",
+              gap: "6px",
+              flexWrap: "wrap",
+            }}
+          >
+            {categories.map((cat, idx) => (
+              <span
+                key={idx}
+                style={{
+                  fontSize: "11px",
+                  color: "white",
+                  padding: "4px 10px",
+                  backgroundColor: "#0078ff",
+                  borderRadius: "12px",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {cat}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Home = () => {
   const { user, isAuthenticated } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -697,45 +800,53 @@ const Home = () => {
                   </h3>
                   <p
                     style={{
-                      margin: "0 0 12px 0",
+                      margin: "0 0 8px 0",
                       fontSize: "14px",
                       color: "var(--text-secondary)",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
+                      fontWeight: "500",
                     }}
                   >
                     {book.author}
                   </p>
+                  {book.description && (
+                    <p
+                      style={{
+                        margin: "0 0 12px 0",
+                        fontSize: "13px",
+                        color: "var(--text-secondary)",
+                        lineHeight: "1.4",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                      }}
+                    >
+                      {book.description}
+                    </p>
+                  )}
                   <div
                     style={{
                       display: "flex",
                       gap: "10px",
                       alignItems: "center",
                       flexWrap: "wrap",
+                      marginTop: "auto",
                     }}
                   >
                     {book.categories && book.categories.length > 0 && (
-                      <span
-                        style={{
-                          fontSize: "12px",
-                          color: "white",
-                          padding: "4px 12px",
-                          backgroundColor: "#0078ff",
-                          borderRadius: "20px",
-                        }}
-                      >
-                        {book.categories[0]}
-                      </span>
+                      <CategoryTags categories={book.categories} maxDisplay={2} />
                     )}
-                    {book.rating && (
+                    {book.rating && book.rating > 0 && (
                       <span
                         style={{
                           fontSize: "14px",
-                          color: "var(--text-secondary)",
+                          color: "var(--text-primary)",
+                          fontWeight: "500",
+                          marginLeft: book.categories?.length ? "auto" : 0,
                         }}
                       >
-                        ⭐ {book.rating}
+                        ⭐ {book.rating.toFixed(1)}
                       </span>
                     )}
                   </div>
