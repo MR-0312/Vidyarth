@@ -1,25 +1,54 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useBooks } from "../hooks/useBooks";
 import "../styles/App.css";
-
-const books = [
-  { title: "The Shaman's Shadow", image: "/assets/book1.jpg" },
-  { title: "Wonderfully Made", image: "/assets/book2.jpg" },
-  { title: "After the Flash", image: "/assets/book3.jpg" },
-  { title: "Protected: Damaged SEAL", image: "/assets/book4.jpg" },
-  { title: "The Deluge", image: "/assets/book5.jpg" },
-  { title: "Where Does God Live?", image: "/assets/book6.jpg" },
-];
 
 const BookCarousel = () => {
   const [index, setIndex] = useState(0);
+  const { books, loading, error } = useBooks({ limit: 50, autoFetch: true });
+
+  // Reset index if books change
+  useEffect(() => {
+    setIndex(0);
+  }, [books]);
+
+  const validBooks = books && books.length > 0 ? books : [];
+  const maxIndex = validBooks.length > 0 ? validBooks.length : 0;
 
   const nextBook = () => {
-    setIndex((prevIndex) => (prevIndex + 1) % books.length);
+    if (maxIndex > 0) {
+      setIndex((prevIndex) => (prevIndex + 1) % maxIndex);
+    }
   };
 
   const prevBook = () => {
-    setIndex((prevIndex) => (prevIndex - 1 + books.length) % books.length);
+    if (maxIndex > 0) {
+      setIndex((prevIndex) => (prevIndex - 1 + maxIndex) % maxIndex);
+    }
   };
+
+  if (loading) {
+    return (
+      <section className="book-carousel">
+        <h2>FREE EBOOKS AND DEALS</h2>
+        <div className="carousel-container">
+          <p>Loading books...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (error || maxIndex === 0) {
+    return (
+      <section className="book-carousel">
+        <h2>FREE EBOOKS AND DEALS</h2>
+        <div className="carousel-container">
+          <p>{error || "No books available"}</p>
+        </div>
+      </section>
+    );
+  }
+
+  const currentBook = validBooks[index];
 
   return (
     <section className="book-carousel">
@@ -29,8 +58,8 @@ const BookCarousel = () => {
           ⬅
         </button>
         <div className="book-item">
-          <img src={books[index].image} alt={books[index].title} />
-          <p>{books[index].title}</p>
+          <img src={currentBook.image} alt={currentBook.title} />
+          <p>{currentBook.title}</p>
         </div>
         <button onClick={nextBook} className="carousel-btn">
           ➡

@@ -3,7 +3,8 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import Sidebar from "../components/Sidebar";
 import UploadModal from "../components/UploadModal";
-import { SIDEBAR_ITEMS, SAMPLE_BOOKS } from "../constants/libraryConstants";
+import { useBooks } from "../hooks/useBooks";
+import { SIDEBAR_ITEMS } from "../constants/libraryConstants";
 import {
   BooksIcon,
   FavoritesIcon,
@@ -50,8 +51,19 @@ const Library = () => {
   const [sortBy, setSortBy] = useState("recent");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [userContributions, setUserContributions] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [allLibraryBooks, setAllLibraryBooks] = useState<any[]>([]);
+  const [isLoadingContributions, setIsLoadingContributions] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Fetch all books for the library
+  const { books: dynamicBooks, loading: booksLoading, error: booksError } = useBooks({ limit: 100, autoFetch: activeNavItem === "books" });
+
+  // Set library books when fetched
+  useEffect(() => {
+    if (activeNavItem === "books" && dynamicBooks.length > 0) {
+      setAllLibraryBooks(dynamicBooks);
+    }
+  }, [dynamicBooks, activeNavItem]);
 
   // Fetch user contributions when the contributions tab is selected
   useEffect(() => {
@@ -61,13 +73,13 @@ const Library = () => {
   }, [activeNavItem, user]);
 
   const fetchUserContributions = async () => {
-    setIsLoading(true);
+    setIsLoadingContributions(true);
     setError(null);
     try {
       const token = localStorage.getItem("koodoreader_token");
       if (!token) {
         setError("Please login to view your contributions");
-        setIsLoading(false);
+        setIsLoadingContributions(false);
         return;
       }
 
@@ -110,7 +122,7 @@ const Library = () => {
       console.error("Error fetching contributions:", err);
       setError("Failed to load contributions");
     } finally {
-      setIsLoading(false);
+      setIsLoadingContributions(false);
     }
   };
 
@@ -122,8 +134,18 @@ const Library = () => {
     }
   };
 
-  // Determine which books to display
-  const displayBooks = activeNavItem === "contributions" ? userContributions : SAMPLE_BOOKS;
+  // Determine which books to display based on active tab
+  let displayBooks = allLibraryBooks;
+  let isLoading = booksLoading;
+
+  if (activeNavItem === "contributions") {
+    displayBooks = userContributions;
+    isLoading = isLoadingContributions;
+  } else if (activeNavItem === "favorites" || activeNavItem === "notes" || activeNavItem === "highlights" || activeNavItem === "trash") {
+    // For other tabs, show empty or filtered data (can be expanded later)
+    displayBooks = [];
+    isLoading = false;
+  }
 
   const containerStyles: React.CSSProperties = {
     display: "flex",
@@ -424,7 +446,16 @@ const Library = () => {
 
 // Book Card Component
 interface BookCardProps {
-  book: (typeof SAMPLE_BOOKS)[0];
+  book: {
+    id: string;
+    title: string;
+    author: string;
+    cover: string;
+    format: string;
+    progress?: number;
+    categories?: string[];
+    rating?: number;
+  };
   viewMode: "grid" | "list";
 }
 
