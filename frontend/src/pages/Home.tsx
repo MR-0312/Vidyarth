@@ -2,42 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
-
-// Featured books data
-const featuredBooks = [
-  {
-    id: 1,
-    title: "The Shaman's Shadow",
-    author: "Elizabeth Rowe",
-    image: "/assets/book1.jpg",
-    category: "Fantasy",
-    rating: 4.7,
-  },
-  {
-    id: 2,
-    title: "Wonderfully Made",
-    author: "Sarah Johnson",
-    image: "/assets/book2.jpg",
-    category: "Self-Help",
-    rating: 4.5,
-  },
-  {
-    id: 3,
-    title: "After the Flash",
-    author: "Michael Thomson",
-    image: "/assets/book3.jpg",
-    category: "Sci-Fi",
-    rating: 4.8,
-  },
-  {
-    id: 4,
-    title: "Protected: Damaged SEAL",
-    author: "Anna Roberts",
-    image: "/assets/book4.jpg",
-    category: "Romance",
-    rating: 4.6,
-  },
-];
+import { useBooks } from "../hooks/useBooks";
 
 // Categories with icons
 const categories = [
@@ -51,10 +16,117 @@ const categories = [
   { name: "Horror", icon: "👻", color: "#955251" },
 ];
 
+// Helper component for category display with tooltip
+const CategoryTags = ({ categories, maxDisplay = 2 }: { categories?: string[]; maxDisplay?: number }) => {
+  const [showCard, setShowCard] = useState(false);
+  
+  if (!categories || categories.length === 0) return null;
+
+  const displayedCategories = categories.slice(0, maxDisplay);
+  const hiddenCount = categories.length - maxDisplay;
+
+  return (
+    <div style={{ position: "relative" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "6px",
+          flexWrap: "wrap",
+          alignItems: "center",
+        }}
+        onMouseEnter={() => hiddenCount > 0 && setShowCard(true)}
+        onMouseLeave={() => setShowCard(false)}
+      >
+        {displayedCategories.map((cat, idx) => (
+          <span
+            key={idx}
+            style={{
+              fontSize: "11px",
+              color: "white",
+              padding: "3px 8px",
+              backgroundColor: "#0078ff",
+              borderRadius: "12px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {cat}
+          </span>
+        ))}
+        {hiddenCount > 0 && (
+          <span
+            style={{
+              fontSize: "11px",
+              color: "var(--text-muted)",
+              padding: "3px 6px",
+              borderRadius: "12px",
+              border: "1px solid var(--border-color)",
+              cursor: "pointer",
+              fontWeight: "600",
+            }}
+          >
+            +{hiddenCount}
+          </span>
+        )}
+      </div>
+      
+      {showCard && hiddenCount > 0 && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: "calc(100% + 8px)",
+            left: 0,
+            backgroundColor: "var(--bg-card)",
+            border: "1px solid var(--border-color)",
+            borderRadius: "8px",
+            padding: "12px 16px",
+            zIndex: 1000,
+            fontSize: "12px",
+            color: "var(--text-primary)",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+            minWidth: "200px",
+            maxWidth: "300px",
+          }}
+        >
+          <div style={{ fontWeight: "600", marginBottom: "8px", color: "var(--text-book-title)" }}>
+            All Genres ({categories.length})
+          </div>
+          <div
+            style={{
+              display: "flex",
+              gap: "6px",
+              flexWrap: "wrap",
+            }}
+          >
+            {categories.map((cat, idx) => (
+              <span
+                key={idx}
+                style={{
+                  fontSize: "11px",
+                  color: "white",
+                  padding: "4px 10px",
+                  backgroundColor: "#0078ff",
+                  borderRadius: "12px",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {cat}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Home = () => {
   const { user, isAuthenticated } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  
+  // Fetch featured books dynamically
+  const { books: allBooks, loading: booksLoading } = useBooks({ limit: 50, autoFetch: !isAuthenticated });
+  const featuredBooks = allBooks.slice(0, 4); // Get first 4 books as featured
 
   // Redirect to library if already logged in
   useEffect(() => {
@@ -620,6 +692,152 @@ const Home = () => {
             </p>
           </div>
         </div>
+      </section>
+
+      {/* Featured Books Section */}
+      <section
+        style={{
+          padding: "100px 50px",
+          backgroundColor: "var(--bg-secondary)",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "36px",
+            fontWeight: "600",
+            textAlign: "center",
+            marginBottom: "60px",
+          }}
+        >
+          Featured Books
+        </h2>
+
+        {booksLoading ? (
+          <div style={{ textAlign: "center", color: "var(--text-secondary)" }}>
+            <p>Loading featured books...</p>
+          </div>
+        ) : featuredBooks.length === 0 ? (
+          <div style={{ textAlign: "center", color: "var(--text-secondary)" }}>
+            <p>No books available yet.</p>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+              gap: "40px",
+              maxWidth: "1200px",
+              margin: "0 auto",
+            }}
+          >
+            {featuredBooks.map((book) => (
+              <div
+                key={book.id}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                  backgroundColor: "var(--bg-card)",
+                  transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                  cursor: "pointer",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLDivElement;
+                  el.style.transform = "translateY(-8px)";
+                  el.style.boxShadow = "0 12px 24px rgba(0,0,0,0.15)";
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLDivElement;
+                  el.style.transform = "translateY(0)";
+                  el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
+                }}
+              >
+                <div
+                  style={{
+                    position: "relative",
+                    paddingBottom: "140%",
+                    backgroundColor: "var(--bg-image)",
+                    overflow: "hidden",
+                  }}
+                >
+                  <img
+                    src={book.image}
+                    alt={book.title}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                </div>
+                <div
+                  style={{
+                    padding: "20px",
+                    display: "flex",
+                    flexDirection: "column",
+                    flex: 1,
+                  }}
+                >
+                  <h3
+                    style={{
+                      margin: "0 0 8px 0",
+                      fontSize: "18px",
+                      fontWeight: "600",
+                      color: "var(--text-primary)",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                    }}
+                  >
+                    {book.title}
+                  </h3>
+                  <p
+                    style={{
+                      margin: "0 0 8px 0",
+                      fontSize: "14px",
+                      color: "var(--text-secondary)",
+                      fontWeight: "500",
+                    }}
+                  >
+                    {book.author}
+                  </p>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "10px",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      marginTop: "auto",
+                    }}
+                  >
+                    {book.categories && book.categories.length > 0 && (
+                      <CategoryTags categories={book.categories} maxDisplay={2} />
+                    )}
+                    {book.rating && book.rating > 0 && (
+                      <span
+                        style={{
+                          fontSize: "14px",
+                          color: "var(--text-primary)",
+                          fontWeight: "500",
+                          marginLeft: book.categories?.length ? "auto" : 0,
+                        }}
+                      >
+                        ⭐ {book.rating.toFixed(1)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* CTA Section */}
