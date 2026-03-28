@@ -72,18 +72,6 @@ const BookCarousel = () => {
             <p style={{ margin: "0 0 12px 0", fontSize: "16px", color: "var(--text-secondary)", fontWeight: "500" }}>
               by {currentBook.author}
             </p>
-            {currentBook.description && (
-              <p
-                style={{
-                  margin: "0 0 16px 0",
-                  fontSize: "14px",
-                  color: "var(--text-secondary)",
-                  lineHeight: "1.6",
-                }}
-              >
-                {currentBook.description}
-              </p>
-            )}
             <div 
               style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "12px", flexWrap: "wrap", position: "relative" }}
               onMouseEnter={() => hiddenCategoriesCount > 0 && setShowCategoriesCard(true)}

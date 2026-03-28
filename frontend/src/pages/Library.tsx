@@ -663,23 +663,6 @@ const BookCard = ({ book, viewMode }: BookCardProps) => {
             >
               {book.author}
             </p>
-            {book.description && (
-              <p
-                style={{
-                  margin: "0 0 8px 0",
-                  fontSize: "13px",
-                  color: "var(--text-secondary)",
-                  lineHeight: "1.4",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: "vertical",
-                }}
-              >
-                {book.description}
-              </p>
-            )}
           </div>
           <div
             style={{
@@ -825,23 +808,6 @@ const BookCard = ({ book, viewMode }: BookCardProps) => {
         >
           {book.author}
         </p>
-        {book.description && (
-          <p
-            style={{
-              margin: "0 0 12px 0",
-              fontSize: "12px",
-              color: "var(--text-secondary)",
-              lineHeight: "1.3",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-            }}
-          >
-            {book.description}
-          </p>
-        )}
         {book.categories && book.categories.length > 0 && (
           <div style={{ marginBottom: "10px" }}>
             <CategoryTags categories={book.categories} maxDisplay={2} />

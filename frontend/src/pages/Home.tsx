@@ -808,23 +808,6 @@ const Home = () => {
                   >
                     {book.author}
                   </p>
-                  {book.description && (
-                    <p
-                      style={{
-                        margin: "0 0 12px 0",
-                        fontSize: "13px",
-                        color: "var(--text-secondary)",
-                        lineHeight: "1.4",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                      }}
-                    >
-                      {book.description}
-                    </p>
-                  )}
                   <div
                     style={{
                       display: "flex",
