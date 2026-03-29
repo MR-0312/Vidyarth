@@ -134,7 +134,7 @@ const Library = () => {
           title: book.title || "Unknown",
           author: book.author || "Unknown",
           cover: coverUrl,
-          format: (book.file_format || "pdf").toUpperCase(),
+          format: (book.file_format || "epub").toUpperCase(),
           description: book.description || "",
           categories: book.categories || [],
           rating: book.average_rating || 0,

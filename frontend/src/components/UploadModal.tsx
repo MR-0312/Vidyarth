@@ -74,10 +74,15 @@ const UploadModal = ({ isOpen, onClose, onSuccess }: UploadModalProps) => {
           return;
         }
       } else if (fileType === "ebook") {
-        if (!["application/pdf", "application/epub+zip"].includes(file.type)) {
+        const validMimeTypes = ["application/epub+zip", "application/x-mobipocket-ebook", "application/vnd.amazon.ebook"];
+        const fileName = file.name.toLowerCase();
+        const validExtensions = [".epub", ".mobi", ".azw3"];
+        const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
+        
+        if (!validMimeTypes.includes(file.type) && !hasValidExtension) {
           setMessage({
             type: "error",
-            text: "eBook must be a PDF or EPUB file",
+            text: "eBook must be EPUB, MOBI, or AZW3 format",
           });
           return;
         }
@@ -468,13 +473,13 @@ const UploadModal = ({ isOpen, onClose, onSuccess }: UploadModalProps) => {
 
           {/* eBook File */}
           <div style={formGroupStyles}>
-            <label style={labelStyles}>eBook File (PDF or EPUB) *</label>
+            <label style={labelStyles}>eBook File (EPUB, MOBI, or AZW3) *</label>
             <div style={uploadAreaStyles(false)}>
               <input
                 type="file"
                 id="ebook-input"
                 style={{ display: "none" }}
-                accept=".pdf,.epub"
+                accept=".epub,.mobi,.azw3"
                 onChange={(e) => handleFileChange(e, "ebook")}
                 disabled={isLoading}
               />

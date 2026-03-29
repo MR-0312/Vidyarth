@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS books (
   description TEXT NOT NULL,
   cover_image VARCHAR(500) NOT NULL,
   ebook_file VARCHAR(500) NOT NULL,
-  file_format VARCHAR(10) NOT NULL CHECK (file_format IN ('pdf', 'epub')),
+  file_format VARCHAR(10) NOT NULL CHECK (file_format IN ('epub', 'mobi', 'azw3')),
   categories TEXT[] NOT NULL,
   average_rating NUMERIC(3, 2) DEFAULT 0,
   total_ratings INTEGER DEFAULT 0,

@@ -94,7 +94,7 @@ export const bookService = {
       : "https://covers.openlibrary.org/b/id/12860656-L.jpg";
 
     const bookId = book._id || book.id || "";
-    const fileFormat = book.file_format || book.fileFormat || "pdf";
+    const fileFormat = book.file_format || book.fileFormat || "epub";
     const averageRating = book.average_rating || book.averageRating || 0;
 
     return {

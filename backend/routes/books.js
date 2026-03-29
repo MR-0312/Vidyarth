@@ -10,8 +10,9 @@ const LoggingService = require('../services/loggingService');
 // Helper: derive file format from file extension
 function getFileFormat(fileName) {
   const lower = fileName.toLowerCase();
-  if (lower.endsWith('.pdf')) return 'pdf';
   if (lower.endsWith('.epub')) return 'epub';
+  if (lower.endsWith('.mobi')) return 'mobi';
+  if (lower.endsWith('.azw3')) return 'azw3';
   return null;
 }
 
@@ -82,7 +83,7 @@ router.post('/', [auth, upload.fields([
 
     const fileFormat = getFileFormat(req.files['ebook'][0].originalname);
     if (!fileFormat) {
-      return res.status(400).json({ error: 'Unsupported ebook file format. Only PDF and EPUB are allowed.' });
+      return res.status(400).json({ error: 'Unsupported ebook file format. Only EPUB, MOBI, and AZW3 are allowed.' });
     }
 
     // Upload cover image to Supabase Storage
@@ -211,7 +212,7 @@ router.put('/:id', [auth, upload.fields([
     if (req.files && req.files['ebook']) {
       const fileFormat = getFileFormat(req.files['ebook'][0].originalname);
       if (!fileFormat) {
-        return res.status(400).json({ error: 'Unsupported ebook file format. Only PDF and EPUB are allowed.' });
+        return res.status(400).json({ error: 'Unsupported ebook file format. Only EPUB, MOBI, and AZW3 are allowed.' });
       }
       // Delete old ebook if it exists
       if (book.ebook_file) {
