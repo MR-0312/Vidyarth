@@ -83,7 +83,7 @@ async function deleteFile(fileUrl, fileType) {
 
 /**
  * Get content type based on file extension
- * @param {string} ext - File extension (e.g., '.pdf')
+ * @param {string} ext - File extension (e.g., '.epub', '.mobi', '.azw3')
  * @returns {string} - MIME type
  */
 function getContentType(ext) {
@@ -123,7 +123,7 @@ async function ensureBucketsExist() {
         console.log(`Bucket ${bucketName} not found, creating...`);
         const { data, error: createError } = await supabase.storage.createBucket(bucketName, {
           public: true,
-          allowedMimeTypes: ['image/*', 'application/pdf', 'application/epub+zip']
+          allowedMimeTypes: ['image/*', 'application/epub+zip', 'application/x-mobipocket-ebook', 'application/vnd.amazon.ebook']
         });
         
         if (createError) {

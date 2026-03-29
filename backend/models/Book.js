@@ -23,7 +23,7 @@ const BookSchema = new mongoose.Schema({
   },
   fileFormat: {
     type: String,
-    enum: ['pdf', 'epub'],
+    enum: ['epub', 'mobi', 'azw3'],
     required: true
   },
   categories: [{

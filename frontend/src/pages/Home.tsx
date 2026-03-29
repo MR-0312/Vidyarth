@@ -444,7 +444,7 @@ const Home = () => {
               Multiple Formats
             </h3>
             <p style={{ color: "var(--text-secondary)", lineHeight: 1.6 }}>
-              Support for EPUB, PDF, MOBI, and more. Import your entire library
+              Support for EPUB, MOBI, AZW3, and more. Import your entire library
               without format concerns.
             </p>
           </div>

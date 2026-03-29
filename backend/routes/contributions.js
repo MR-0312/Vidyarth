@@ -98,9 +98,7 @@ router.post(
       }
 
       res.json({
-        message: trackAsContribution 
-          ? 'Thank you for your contribution!' 
-          : 'Book uploaded successfully!',
+        message: 'Thank you for your contribution!',
         contribution: contribution ? {
           id: contribution.id,
           bookId: newBook.id,

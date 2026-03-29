@@ -473,13 +473,13 @@ const UploadModal = ({ isOpen, onClose, onSuccess }: UploadModalProps) => {
 
           {/* eBook File */}
           <div style={formGroupStyles}>
-            <label style={labelStyles}>eBook File (PDF or EPUB) *</label>
+            <label style={labelStyles}>eBook File (EPUB, MOBI, or AZW3) *</label>
             <div style={uploadAreaStyles(false)}>
               <input
                 type="file"
                 id="ebook-input"
                 style={{ display: "none" }}
-                accept=".pdf,.epub"
+                accept=".epub,.mobi,.azw3"
                 onChange={(e) => handleFileChange(e, "ebook")}
                 disabled={isLoading}
               />
