@@ -12,8 +12,8 @@ const upload = multer({
         return cb(new Error('Only image files are allowed!'), false);
       }
     } else if (file.fieldname === "ebook") {
-      if (!file.originalname.match(/\.(pdf|epub)$/i)) {
-        return cb(new Error('Only PDF and EPUB files are allowed!'), false);
+      if (!file.originalname.match(/\.(epub|mobi|azw3)$/i)) {
+        return cb(new Error('Only EPUB, MOBI, and AZW3 eBook formats are allowed!'), false);
       }
     }
     cb(null, true);

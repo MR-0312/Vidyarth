@@ -88,8 +88,9 @@ async function deleteFile(fileUrl, fileType) {
  */
 function getContentType(ext) {
   const mimeTypes = {
-    '.pdf': 'application/pdf',
     '.epub': 'application/epub+zip',
+    '.mobi': 'application/x-mobipocket-ebook',
+    '.azw3': 'application/vnd.amazon.ebook',
     '.jpg': 'image/jpeg',
     '.jpeg': 'image/jpeg',
     '.png': 'image/png',
