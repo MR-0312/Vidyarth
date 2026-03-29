@@ -379,7 +379,7 @@ const ContributionQueries = {
       .from('contributions')
       .select(`
         *,
-        books!contributions_book_id_fkey(id, title, author)
+        books!contributions_book_id_fkey(id, title, author, description, cover_image, ebook_file, file_format, categories, average_rating, total_ratings, status)
       `)
       .eq('user_id', userId);
     

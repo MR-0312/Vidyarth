@@ -37,7 +37,7 @@ router.get('/', async (req, res) => {
       }
     }
 
-    const filters = { status: 'approved' };
+    const filters = {};
     if (category) {
       filters.category = category;
     }

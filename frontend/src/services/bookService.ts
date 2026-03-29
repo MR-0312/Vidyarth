@@ -8,11 +8,16 @@ export interface Book {
   title: string;
   author: string;
   description?: string;
-  coverImage: string;
+  cover_image?: string;
+  coverImage?: string;
+  ebook_file?: string;
   eBookFile?: string;
+  file_format?: string;
   fileFormat?: string;
   categories?: string[];
+  average_rating?: number;
   averageRating?: number;
+  total_ratings?: number;
   totalRatings?: number;
   status?: string;
   date?: string;
@@ -78,13 +83,19 @@ export const bookService = {
 
   // Transform book data to display format
   transformBook(book: Book) {
-    const coverPath = book.coverImage || "";
-    const normalizedPath = coverPath.replace(/\\/g, "/");
-    const coverUrl = normalizedPath
-      ? `${UPLOADS_BASE_URL}/${normalizedPath}`
+    // Handle both camelCase (MongoDB/old) and snake_case (Supabase/PostgreSQL) formats
+    const coverPath = book.cover_image || book.coverImage || "";
+    
+    // Supabase Storage returns full URLs; local paths need construction
+    const coverUrl = coverPath.startsWith('http')
+      ? coverPath
+      : coverPath
+      ? `${UPLOADS_BASE_URL}/${coverPath.replace(/\\/g, "/")}`
       : "https://covers.openlibrary.org/b/id/12860656-L.jpg";
 
     const bookId = book._id || book.id || "";
+    const fileFormat = book.file_format || book.fileFormat || "pdf";
+    const averageRating = book.average_rating || book.averageRating || 0;
 
     return {
       id: bookId,
@@ -93,9 +104,9 @@ export const bookService = {
       description: book.description || "",
       cover: coverUrl,
       image: coverUrl,
-      format: (book.fileFormat || "pdf").toUpperCase(),
+      format: fileFormat.toUpperCase(),
       categories: book.categories || [],
-      rating: book.averageRating || 0,
+      rating: averageRating,
       status: book.status || "approved",
     };
   },
