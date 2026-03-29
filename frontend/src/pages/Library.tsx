@@ -120,34 +120,24 @@ const Library = () => {
 
       const data = await response.json();
       // Transform contributions to display book data
-      const books = data.map((contribution: {
-        _id: string;
-        bookId?: {
-          title?: string;
-          author?: string;
-          description?: string;
-          coverImage?: string;
-          fileFormat?: string;
-          categories?: string[];
-          averageRating?: number;
-        };
-      }) => {
-        const coverPath = contribution.bookId?.coverImage || "";
-        // Normalize Windows paths to URL format
-        const normalizedPath = coverPath.replace(/\\/g, "/");
-        const coverUrl = normalizedPath 
-          ? `http://localhost:8080/${normalizedPath}` 
+      const books = data.map((contribution: any) => {
+        // The response includes book data via the foreign key join as 'books'
+        const book = contribution.books || {};
+        const coverPath = book.cover_image || "";
+        // Handle Supabase Storage URLs (already full URLs)
+        const coverUrl = coverPath.startsWith('http') 
+          ? coverPath 
           : "https://covers.openlibrary.org/b/id/12860656-L.jpg";
         
         return {
-          id: contribution._id,
-          title: contribution.bookId?.title || "Unknown",
-          author: contribution.bookId?.author || "Unknown",
+          id: contribution.id,
+          title: book.title || "Unknown",
+          author: book.author || "Unknown",
           cover: coverUrl,
-          format: (contribution.bookId?.fileFormat || "pdf").toUpperCase(),
-          description: contribution.bookId?.description || "",
-          categories: contribution.bookId?.categories || [],
-          rating: contribution.bookId?.averageRating || 0,
+          format: (book.file_format || "pdf").toUpperCase(),
+          description: book.description || "",
+          categories: book.categories || [],
+          rating: book.average_rating || 0,
           progress: 0,
         };
       });

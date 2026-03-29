@@ -4,13 +4,13 @@ const { check, validationResult } = require('express-validator');
 const upload = require('../middleware/upload');
 const auth = require('../middleware/auth');
 const optionalAuth = require('../middleware/optionalAuth');
-const Contribution = require('../models/Contribution');
-const Book = require('../models/Book');
+const { ContributionQueries, BookQueries } = require('../db/queries');
+const { uploadFile } = require('../services/storageService');
 const LoggingService = require('../services/loggingService');
 
-// Helper: derive file format from uploaded ebook path
-function getFileFormat(filePath) {
-  const lower = filePath.toLowerCase();
+// Helper: derive file format from file name
+function getFileFormat(fileName) {
+  const lower = fileName.toLowerCase();
   if (lower.endsWith('.pdf')) return 'pdf';
   if (lower.endsWith('.epub')) return 'epub';
   return null;
@@ -50,70 +50,49 @@ router.post(
         return res.status(400).json({ error: 'At least one category is required' });
       }
 
-      // Check if this should be tracked as a contribution
       const trackAsContribution = req.body.trackAsContribution === 'true' || req.body.trackAsContribution === true;
-
-      // Determine file format from the uploaded ebook
-      const ebookPath = req.files.ebook[0].path;
-      const fileFormat = getFileFormat(ebookPath);
+      const fileFormat = getFileFormat(req.files.ebook[0].originalname);
+      
       if (!fileFormat) {
         return res.status(400).json({ error: 'Unsupported ebook file format. Only PDF and EPUB are allowed.' });
       }
 
-      // Step 1: Check if a book with this title and author already exists
-      let existingBook = await Book.findOne({ 
-        title: title.trim(),
-        author: author.trim()
+      // Upload cover image to Supabase Storage
+      const coverUrl = await uploadFile(req.files.cover[0].buffer, req.files.cover[0].originalname, 'cover');
+
+      // Upload ebook to Supabase Storage
+      const ebookUrl = await uploadFile(req.files.ebook[0].buffer, req.files.ebook[0].originalname, 'ebook');
+
+      // Create new book in database
+      const newBook = await BookQueries.create({
+        title,
+        author,
+        description,
+        categories: Array.isArray(categories) ? categories : [categories],
+        cover_image: coverUrl,
+        ebook_file: ebookUrl,
+        file_format: fileFormat,
+        user_id: req.user?.id || null,
+        status: 'pending'
       });
 
-      let book;
-
-      if (existingBook) {
-        // Book already exists - reuse existing book
-        book = existingBook;
-      } else {
-        // Step 2: Create new book in Books collection
-        const newBook = new Book({
-          title,
-          author,
-          description,
-          categories: Array.isArray(categories) ? categories : [categories],
-          coverImage: req.files.cover[0].path.replace(/\\/g, "/"),
-          eBookFile: ebookPath.replace(/\\/g, "/"),
-          fileFormat,
-          userId: req.user?.id || null,
-          status: 'pending'
-        });
-
-        book = await newBook.save();
-      }
-
-      // Step 3: Create contribution record linking to the book (only if tracked)
+      // Create contribution record if tracked
       let contribution = null;
       if (trackAsContribution) {
-        const newContribution = new Contribution({
-          bookId: book._id,
-          userId: req.user?.id || null
-        });
-
-        contribution = await newContribution.save();
-
-        // Step 4: Populate book data for response
-        await contribution.populate('bookId');
+        contribution = await ContributionQueries.create(newBook.id, req.user?.id || null);
 
         // Log CONTRIBUTE activity
         try {
           await LoggingService.logActivity(req.user?.id || null, 'CONTRIBUTE', {
-            bookId: book._id,
+            bookId: newBook.id,
             metadata: {
-              title: book.title,
-              author: book.author,
-              contributionId: contribution._id
+              title: newBook.title,
+              author: newBook.author,
+              contributionId: contribution.id
             }
           });
         } catch (logErr) {
           console.error('Error logging contribution activity:', logErr);
-          // Don't fail the contribution if logging fails
         }
       }
 
@@ -122,15 +101,15 @@ router.post(
           ? 'Thank you for your contribution!' 
           : 'Book uploaded successfully!',
         contribution: contribution ? {
-          id: contribution._id,
-          bookId: book._id,
-          title: book.title,
-          author: book.author
+          id: contribution.id,
+          bookId: newBook.id,
+          title: newBook.title,
+          author: newBook.author
         } : null,
         book: {
-          id: book._id,
-          title: book.title,
-          author: book.author
+          id: newBook.id,
+          title: newBook.title,
+          author: newBook.author
         }
       });
     } catch (err) {
@@ -145,9 +124,7 @@ router.post(
 // @access  Public
 router.get('/', async (req, res) => {
   try {
-    const contributions = await Contribution.find()
-      .populate('bookId')
-      .sort({ date: -1 });
+    const contributions = await ContributionQueries.getByBookId(null);
     res.json(contributions);
   } catch (err) {
     console.error(err.message);
@@ -160,8 +137,11 @@ router.get('/', async (req, res) => {
 // @access  Public
 router.get('/count', async (req, res) => {
   try {
-    const count = await Contribution.countDocuments();
-    res.json({ totalContributions: count });
+    const { supabase } = require('../db/queries');
+    const { count } = await supabase
+      .from('contributions')
+      .select('*', { count: 'exact', head: true });
+    res.json({ totalContributions: count || 0 });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: 'Server Error' });
@@ -173,9 +153,7 @@ router.get('/count', async (req, res) => {
 // @access  Private
 router.get('/me', auth, async (req, res) => {
   try {
-    const contributions = await Contribution.find({ userId: req.user.id })
-      .populate('bookId')
-      .sort({ date: -1 });
+    const contributions = await ContributionQueries.getByUserId(req.user.id);
     res.json(contributions);
   } catch (err) {
     console.error(err.message);
@@ -184,3 +162,4 @@ router.get('/me', auth, async (req, res) => {
 });
 
 module.exports = router;
+

@@ -2,8 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const auth = require('../middleware/auth');
-const Review = require('../models/Review');
-const Book = require('../models/Book');
+const { ReviewQueries, BookQueries } = require('../db/queries');
 const LoggingService = require('../services/loggingService');
 
 // @route   POST api/reviews/:bookId
@@ -19,19 +18,23 @@ router.post('/:bookId', [auth, [
   }
 
   try {
-    const book = await Book.findById(req.params.bookId);
+    const book = await BookQueries.findById(req.params.bookId);
     if (!book) {
       return res.status(404).json({ msg: 'Book not found' });
     }
 
-    const newReview = new Review({
-      user: req.user.id,
-      book: req.params.bookId,
+    // Check if user already reviewed this book
+    const existingReview = await ReviewQueries.findOne(req.user.id, req.params.bookId);
+    if (existingReview) {
+      return res.status(400).json({ msg: 'You have already reviewed this book' });
+    }
+
+    const review = await ReviewQueries.create({
+      user_id: req.user.id,
+      book_id: req.params.bookId,
       rating: req.body.rating,
       comment: req.body.comment
     });
-
-    const review = await newReview.save();
 
     // Log WRITE_REVIEW and RATE_BOOK activities
     try {
@@ -56,7 +59,7 @@ router.post('/:bookId', [auth, [
     res.json(review);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 
@@ -65,9 +68,7 @@ router.post('/:bookId', [auth, [
 // @access  Public
 router.get('/:bookId', async (req, res) => {
   try {
-    const reviews = await Review.find({ book: req.params.bookId })
-      .populate('user', ['username'])
-      .sort({ date: -1 });
+    const reviews = await ReviewQueries.getByBookId(req.params.bookId);
 
     // Log VIEW_REVIEWS activity if user is authenticated
     if (req.user?.id) {
@@ -85,7 +86,7 @@ router.get('/:bookId', async (req, res) => {
     res.json(reviews);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 

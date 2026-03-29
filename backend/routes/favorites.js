@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
-const User = require('../models/User');
-const Book = require('../models/Book');
+const { BookQueries, FavoriteQueries } = require('../db/queries');
 const LoggingService = require('../services/loggingService');
 
 // @route   POST api/favorites/:bookId
@@ -10,24 +9,23 @@ const LoggingService = require('../services/loggingService');
 // @access  Private
 router.post('/:bookId', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    const book = await Book.findById(req.params.bookId);
-
+    const book = await BookQueries.findById(req.params.bookId);
     if (!book) {
       return res.status(404).json({ msg: 'Book not found' });
     }
 
-    if (user.favorites.includes(book._id)) {
+    // Check if already favorited
+    const isFav = await FavoriteQueries.isFavorited(req.user.id, req.params.bookId);
+    if (isFav) {
       return res.status(400).json({ msg: 'Book already in favorites' });
     }
 
-    user.favorites.push(book._id);
-    await user.save();
+    await FavoriteQueries.add(req.user.id, req.params.bookId);
 
     // Log ADD_FAVORITE activity
     try {
       await LoggingService.logActivity(req.user.id, 'ADD_FAVORITE', {
-        bookId: book._id,
+        bookId: req.params.bookId,
         ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
         userAgent: req.headers['user-agent'],
       });
@@ -35,10 +33,11 @@ router.post('/:bookId', auth, async (req, res) => {
       console.error('Error logging add favorite:', logErr);
     }
 
-    res.json(user.favorites);
+    const favorites = await FavoriteQueries.getByUserId(req.user.id);
+    res.json(favorites);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 
@@ -47,13 +46,7 @@ router.post('/:bookId', auth, async (req, res) => {
 // @access  Private
 router.delete('/:bookId', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-
-    user.favorites = user.favorites.filter(
-      (bookId) => bookId.toString() !== req.params.bookId
-    );
-
-    await user.save();
+    await FavoriteQueries.remove(req.user.id, req.params.bookId);
 
     // Log REMOVE_FAVORITE activity
     try {
@@ -66,10 +59,11 @@ router.delete('/:bookId', auth, async (req, res) => {
       console.error('Error logging remove favorite:', logErr);
     }
 
-    res.json(user.favorites);
+    const favorites = await FavoriteQueries.getByUserId(req.user.id);
+    res.json(favorites);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 
@@ -78,7 +72,7 @@ router.delete('/:bookId', auth, async (req, res) => {
 // @access  Private
 router.get('/', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).populate('favorites');
+    const favorites = await FavoriteQueries.getByUserId(req.user.id);
     
     // Log GET_FAVORITES activity
     try {
@@ -90,10 +84,10 @@ router.get('/', auth, async (req, res) => {
       console.error('Error logging get favorites:', logErr);
     }
     
-    res.json(user.favorites);
+    res.json(favorites);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 

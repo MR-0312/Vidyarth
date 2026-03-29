@@ -3,13 +3,13 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const auth = require('../middleware/auth');
 const upload = require('../middleware/upload');
-const Book = require('../models/Book');
-const User = require('../models/User');
+const { BookQueries, UserQueries, ReviewQueries } = require('../db/queries');
+const { uploadFile, deleteFile } = require('../services/storageService');
 const LoggingService = require('../services/loggingService');
 
-// Helper: derive file format from uploaded ebook path
-function getFileFormat(filePath) {
-  const lower = filePath.toLowerCase();
+// Helper: derive file format from file extension
+function getFileFormat(fileName) {
+  const lower = fileName.toLowerCase();
   if (lower.endsWith('.pdf')) return 'pdf';
   if (lower.endsWith('.epub')) return 'epub';
   return null;
@@ -22,32 +22,27 @@ router.get('/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const startIndex = (page - 1) * limit;
     const category = req.query.category;
 
-    let query = {};
-    if (category) {
-      query.categories = category;
-      
-      // Log category filter activity if user is authenticated
-      if (req.user?.id) {
-        try {
-          await LoggingService.logActivity(req.user.id, 'FILTER_CATEGORY', {
-            category,
-            ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
-            userAgent: req.headers['user-agent'],
-          });
-        } catch (logErr) {
-          console.error('Error logging category filter:', logErr);
-        }
+    // Log category filter activity if user is authenticated
+    if (category && req.user?.id) {
+      try {
+        await LoggingService.logActivity(req.user.id, 'FILTER_CATEGORY', {
+          category,
+          ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
+          userAgent: req.headers['user-agent'],
+        });
+      } catch (logErr) {
+        console.error('Error logging category filter:', logErr);
       }
     }
 
-    const total = await Book.countDocuments(query);
-    const books = await Book.find(query)
-      .sort({ date: -1 })
-      .limit(limit)
-      .skip(startIndex);
+    const filters = {};
+    if (category) {
+      filters.category = category;
+    }
+
+    const { books, total } = await BookQueries.getAll(page, limit, filters);
 
     res.json({
       books,
@@ -57,7 +52,7 @@ router.get('/', async (req, res) => {
     });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 
@@ -81,28 +76,38 @@ router.post('/', [auth, upload.fields([
   const { title, author, description, categories } = req.body;
 
   try {
-    const ebookPath = req.files['ebook'][0].path;
-    const fileFormat = getFileFormat(ebookPath);
+    if (!req.files || !req.files['cover'] || !req.files['ebook']) {
+      return res.status(400).json({ error: 'Cover image and e-book file are required' });
+    }
+
+    const fileFormat = getFileFormat(req.files['ebook'][0].originalname);
     if (!fileFormat) {
       return res.status(400).json({ error: 'Unsupported ebook file format. Only PDF and EPUB are allowed.' });
     }
 
-    const newBook = new Book({
+    // Upload cover image to Supabase Storage
+    const coverUrl = await uploadFile(req.files['cover'][0].buffer, req.files['cover'][0].originalname, 'cover');
+
+    // Upload ebook to Supabase Storage
+    const ebookUrl = await uploadFile(req.files['ebook'][0].buffer, req.files['ebook'][0].originalname, 'ebook');
+
+    // Create book in database
+    const newBook = await BookQueries.create({
       title,
       author,
       description,
       categories,
-      coverImage: req.files['cover'][0].path,
-      eBookFile: ebookPath,
-      fileFormat
+      cover_image: coverUrl,
+      ebook_file: ebookUrl,
+      file_format: fileFormat,
+      user_id: req.user.id,
+      status: 'pending'
     });
-
-    const book = await newBook.save();
 
     // Log ADD_BOOK activity
     try {
       await LoggingService.logActivity(req.user.id, 'ADD_BOOK', {
-        bookId: book._id,
+        bookId: newBook.id,
         ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
         userAgent: req.headers['user-agent'],
       });
@@ -110,10 +115,9 @@ router.post('/', [auth, upload.fields([
       console.error('Error logging add book:', logErr);
     }
 
-    res.json(book);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 
@@ -122,17 +126,23 @@ router.post('/', [auth, upload.fields([
 // @access  Public
 router.get('/:id', async (req, res) => {
   try {
-    const book = await Book.findById(req.params.id);
+    const book = await BookQueries.findById(req.params.id);
     
     if (!book) {
       return res.status(404).json({ msg: 'Book not found' });
     }
 
+    // Get reviews for this book
+    const reviews = await ReviewQueries.getByBookId(req.params.id);
+    
+    // Get average rating
+    const { average, count } = await ReviewQueries.getAverageRating(req.params.id);
+
     // Log VIEW_BOOK activity if user is authenticated
     if (req.user?.id) {
       try {
         await LoggingService.logActivity(req.user.id, 'VIEW_BOOK', {
-          bookId: book._id,
+          bookId: book.id,
           ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
           userAgent: req.headers['user-agent'],
         });
@@ -141,13 +151,15 @@ router.get('/:id', async (req, res) => {
       }
     }
 
-    res.json(book);
+    res.json({
+      ...book,
+      reviews,
+      averageRating: average,
+      totalReviews: count
+    });
   } catch (err) {
     console.error(err.message);
-    if (err.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'Book not found' });
-    }
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 
@@ -171,36 +183,52 @@ router.put('/:id', [auth, upload.fields([
   const { title, author, description, categories } = req.body;
 
   try {
-    let book = await Book.findById(req.params.id);
+    let book = await BookQueries.findById(req.params.id);
 
     if (!book) {
       return res.status(404).json({ msg: 'Book not found' });
     }
 
-    book.title = title;
-    book.author = author;
-    book.description = description;
-    book.categories = categories;
+    // Prepare update data
+    const updateData = {
+      title,
+      author,
+      description,
+      categories
+    };
 
-    if (req.files['cover']) {
-      book.coverImage = req.files['cover'][0].path;
+    // Handle cover image upload if provided
+    if (req.files && req.files['cover']) {
+      // Delete old cover if it exists
+      if (book.cover_image) {
+        await deleteFile(book.cover_image, 'cover');
+      }
+      const newCoverUrl = await uploadFile(req.files['cover'][0].buffer, req.files['cover'][0].originalname, 'cover');
+      updateData.cover_image = newCoverUrl;
     }
-    if (req.files['ebook']) {
-      const ebookPath = req.files['ebook'][0].path;
-      const fileFormat = getFileFormat(ebookPath);
+
+    // Handle ebook upload if provided
+    if (req.files && req.files['ebook']) {
+      const fileFormat = getFileFormat(req.files['ebook'][0].originalname);
       if (!fileFormat) {
         return res.status(400).json({ error: 'Unsupported ebook file format. Only PDF and EPUB are allowed.' });
       }
-      book.eBookFile = ebookPath;
-      book.fileFormat = fileFormat;
+      // Delete old ebook if it exists
+      if (book.ebook_file) {
+        await deleteFile(book.ebook_file, 'ebook');
+      }
+      const newEbookUrl = await uploadFile(req.files['ebook'][0].buffer, req.files['ebook'][0].originalname, 'ebook');
+      updateData.ebook_file = newEbookUrl;
+      updateData.file_format = fileFormat;
     }
 
-    await book.save();
+    // Update book in database
+    const updatedBook = await BookQueries.update(req.params.id, updateData);
 
     // Log UPDATE_BOOK activity
     try {
       await LoggingService.logActivity(req.user.id, 'UPDATE_BOOK', {
-        bookId: book._id,
+        bookId: req.params.id,
         ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
         userAgent: req.headers['user-agent'],
       });
@@ -208,10 +236,9 @@ router.put('/:id', [auth, upload.fields([
       console.error('Error logging update book:', logErr);
     }
 
-    res.json(book);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 
@@ -220,13 +247,22 @@ router.put('/:id', [auth, upload.fields([
 // @access  Private
 router.delete('/:id', auth, async (req, res) => {
   try {
-    const book = await Book.findById(req.params.id);
+    const book = await BookQueries.findById(req.params.id);
 
     if (!book) {
       return res.status(404).json({ msg: 'Book not found' });
     }
 
-    await Book.deleteOne({ _id: req.params.id });
+    // Delete files from Supabase Storage
+    if (book.cover_image) {
+      await deleteFile(book.cover_image, 'cover');
+    }
+    if (book.ebook_file) {
+      await deleteFile(book.ebook_file, 'ebook');
+    }
+
+    // Delete book from database
+    await BookQueries.delete(req.params.id);
 
     // Log DELETE_BOOK activity
     try {
@@ -242,10 +278,7 @@ router.delete('/:id', auth, async (req, res) => {
     res.json({ msg: 'Book removed' });
   } catch (err) {
     console.error(err.message);
-    if (err.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'Book not found' });
-    }
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 
@@ -255,19 +288,6 @@ router.delete('/:id', auth, async (req, res) => {
 router.get('/search', async (req, res) => {
   try {
     const { query, page = 1, limit = 10, category } = req.query;
-    const startIndex = (page - 1) * limit;
-
-    let searchQuery = {
-      $or: [
-        { title: { $regex: query, $options: 'i' } },
-        { author: { $regex: query, $options: 'i' } },
-        { description: { $regex: query, $options: 'i' } }
-      ]
-    };
-
-    if (category) {
-      searchQuery.categories = category;
-    }
 
     // Log SEARCH activity if user is authenticated
     if (req.user?.id && query) {
@@ -283,56 +303,32 @@ router.get('/search', async (req, res) => {
       }
     }
 
-    const total = await Book.countDocuments(searchQuery);
+    // Note: Full-text search would require a more sophisticated implementation
+    // For now, we'll fetch all approved books and filter on the application side
+    // In production, use Supabase full-text search or PostgreSQL search capabilities
+    const filters = { status: 'approved' };
+    if (category) {
+      filters.category = category;
+    }
 
-    const books = await Book.find(searchQuery)
-      .sort({ date: -1 })
-      .limit(parseInt(limit))
-      .skip(startIndex);
+    const { books, total } = await BookQueries.getAll(parseInt(page), parseInt(limit), filters);
+
+    // Filter by search query (basic search)
+    const searchedBooks = query ? books.filter(book =>
+      book.title.toLowerCase().includes(query.toLowerCase()) ||
+      book.author.toLowerCase().includes(query.toLowerCase()) ||
+      book.description.toLowerCase().includes(query.toLowerCase())
+    ) : books;
 
     res.json({
-      books,
+      books: searchedBooks,
       currentPage: parseInt(page),
       totalPages: Math.ceil(total / limit),
-      totalBooks: total
+      totalBooks: searchedBooks.length
     });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
-
-// @route   GET api/books/recommend
-// @desc    Get book recommendations based on user preferences
-// @access  Private
-router.get('/recommend', auth, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-    
-    if (!user) {
-      return res.status(404).json({ msg: 'User not found' });
-    }
-
-    const recommendedBooks = await Book.find({
-      categories: { $in: user.preferredCategories }
-    })
-    .sort({ averageRating: -1 })
-    .limit(10);
-
-    // Log GET_RECOMMENDATIONS activity
-    try {
-      await LoggingService.logActivity(req.user.id, 'GET_RECOMMENDATIONS', {
-        ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
-        userAgent: req.headers['user-agent'],
-      });
-    } catch (logErr) {
-      console.error('Error logging recommendations:', logErr);
-    }
-
-    res.json(recommendedBooks);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 
