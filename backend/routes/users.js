@@ -1,135 +1,42 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const { check, validationResult } = require('express-validator');
 const auth = require('../middleware/auth');
 const upload = require('../middleware/upload');
-const User = require('../models/User');
+const { UserQueries } = require('../db/queries');
+const { uploadFile, deleteFile } = require('../services/storageService');
 const LoggingService = require('../services/loggingService');
 
-// @route   POST api/users/register
-// @desc    Register a user
-// @access  Public
-router.post('/register', [
-  check('username', 'Username is required').not().isEmpty(),
-  check('email', 'Please include a valid email').isEmail(),
-  check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 })
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
 
-  const { username, email, password } = req.body;
-
-  try {
-    let user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ msg: 'User already exists' });
-    }
-
-    user = new User({
-      username,
-      email,
-      password
-    });
-
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(password, salt);
-
-    await user.save();
-
-    const payload = {
-      user: {
-        id: user.id
-      }
-    };
-
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' },
-      (err, token) => {
-        if (err) throw err;
-        res.json({ token });
-      }
-    );
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-});
-
-// @route   POST api/users/login
-// @desc    Authenticate user & get token
-// @access  Public
-router.post('/login', [
-  check('email', 'Please include a valid email').isEmail(),
-  check('password', 'Password is required').exists()
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const { email, password } = req.body;
-
-  try {
-    let user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ msg: 'Invalid Credentials' });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ msg: 'Invalid Credentials' });
-    }
-
-    const payload = {
-      user: {
-        id: user.id
-      }
-    };
-
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' },
-      async (err, token) => {
-        if (err) throw err;
-
-        // Log LOGIN activity
-        try {
-          await LoggingService.logActivity(user.id, 'LOGIN', {
-            sessionId: require('uuid').v4(),
-            ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
-            userAgent: req.headers['user-agent'],
-            deviceType: /mobile/i.test(req.headers['user-agent'] || '') ? 'MOBILE' : 'WEB',
-          });
-        } catch (logErr) {
-          console.error('Error logging login activity:', logErr);
-        }
-
-        res.json({ token });
-      }
-    );
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-});
+// Note: Register and login functionality is handled in auth.js route
+// These endpoints are deprecated
 
 // @route   GET api/users/me
 // @desc    Get current user
 // @access  Private
 router.get('/me', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await UserQueries.getUserProfile(req.user.id);
     res.json(user);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
+  }
+});
+
+// @route   GET api/users/:userId
+// @desc    Get user profile by ID
+// @access  Public
+router.get('/:userId', async (req, res) => {
+  try {
+    const user = await UserQueries.getUserProfile(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+    res.json(user);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 
@@ -151,20 +58,27 @@ router.put('/profile', [auth,
   const { bio, preferredCategories } = req.body;
 
   try {
-    let user = await User.findById(req.user.id);
+    let user = await UserQueries.findById(req.user.id);
 
     if (!user) {
       return res.status(404).json({ msg: 'User not found' });
     }
 
-    user.bio = bio;
-    user.preferredCategories = preferredCategories;
+    const updateData = {
+      bio,
+      preferred_categories: preferredCategories
+    };
 
     if (req.file) {
-      user.profilePicture = req.file.path;
+      // Delete old profile picture if exists
+      if (user.profile_picture && user.profile_picture !== 'default-profile.jpg') {
+        await deleteFile(user.profile_picture, 'cover');
+      }
+      const profilePicUrl = await uploadFile(req.file.buffer, req.file.originalname, 'cover');
+      updateData.profile_picture = profilePicUrl;
     }
 
-    await user.save();
+    const updatedUser = await UserQueries.update(req.user.id, updateData);
 
     // Log UPDATE_PROFILE activity
     try {
@@ -176,10 +90,10 @@ router.put('/profile', [auth,
       console.error('Error logging profile update:', logErr);
     }
 
-    res.json(user);
+    res.json(updatedUser);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({ msg: 'Server Error' });
   }
 });
 
