@@ -19,7 +19,7 @@ function App() {
           <Route path="/read/:bookId" element={<Read />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/library" element={<Library />} />
+          <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
         </Routes>
       </Router>
     </AuthProvider>

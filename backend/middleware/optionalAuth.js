@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const tokenBlacklist = require('../services/tokenBlacklist');
 
 /**
  * Optional authentication middleware
@@ -11,6 +12,13 @@ module.exports = function(req, res, next) {
 
   // If no token, continue without authentication
   if (!token) {
+    return next();
+  }
+
+  // Check if token is blacklisted (revoked)
+  if (tokenBlacklist.isBlacklisted(token)) {
+    // Treat blacklisted token as if no token was provided
+    console.warn('Blacklisted token attempted to be used');
     return next();
   }
 
