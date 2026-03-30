@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import { bookService, Book } from "../services/bookService";
 
@@ -8,19 +7,23 @@ interface Review {
   _id?: string;
   id?: string;
   user?: {
-    name: string;
+    name?: string;
+    username?: string;
+  };
+  users?: {
+    id?: string;
+    username?: string;
+    profile_picture?: string;
   };
   userName?: string;
   rating: number;
   comment: string;
-  date?: string;
   createdAt?: string;
 }
 
 const BookPreview = () => {
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
-  const { theme } = useTheme();
   const { user } = useAuth();
   const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);
@@ -484,22 +487,6 @@ const BookPreview = () => {
                   {book.file_format || book.fileFormat || "Digital"}
                 </div>
               </div>
-              <div>
-                <div
-                  style={{
-                    fontSize: "12px",
-                    color: "var(--text-secondary)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
-                    marginBottom: "4px",
-                  }}
-                >
-                  Status
-                </div>
-                <div style={{ fontSize: "16px", fontWeight: "600" }}>
-                  {book.status || "Available"}
-                </div>
-              </div>
             </div>
 
             {/* Categories */}
@@ -638,24 +625,7 @@ const BookPreview = () => {
           >
             {description}
           </p>
-          {description.length > 300 && (
-            <button
-              style={{
-                background: "none",
-                border: "none",
-                color: "#0078ff",
-                cursor: "pointer",
-                fontSize: "14px",
-                fontWeight: "600",
-                padding: "0",
-              }}
-              onClick={() => {
-                // Could expand description or navigate to full details
-              }}
-            >
-              Show More →
-            </button>
-          )}
+
         </div>
 
         {/* Rating and Review Section */}
@@ -834,7 +804,7 @@ const BookPreview = () => {
                           marginBottom: "4px",
                         }}
                       >
-                        {review.user?.name || review.userName || "Anonymous"}
+                        {review.users?.username || review.user?.username || review.user?.name || review.userName || "Anonymous"}
                       </div>
                       <div
                         style={{
@@ -842,7 +812,7 @@ const BookPreview = () => {
                           color: "var(--text-secondary)",
                         }}
                       >
-                        {formatDate(review.date || review.createdAt)}
+                        {formatDate(review.createdAt)}
                       </div>
                     </div>
                     <div
