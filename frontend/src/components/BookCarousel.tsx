@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useBooks } from "../hooks/useBooks";
 import "../styles/App.css";
 
 const BookCarousel = () => {
+  const navigate = useNavigate();
   const [index, setIndex] = useState(0);
   const [showCategoriesCard, setShowCategoriesCard] = useState(false);
   const { books, loading, error } = useBooks({ limit: 50, autoFetch: true });
@@ -56,6 +58,13 @@ const BookCarousel = () => {
   const displayedCategories = currentBook.categories?.slice(0, 2) || [];
   const hiddenCategoriesCount = (currentBook.categories?.length || 0) - 2;
 
+  const handleBookClick = () => {
+    const bookId = currentBook._id || currentBook.id;
+    if (bookId) {
+      navigate(`/preview/${bookId}`);
+    }
+  };
+
   return (
     <section className="book-carousel">
       <h2>FREE EBOOKS AND DEALS</h2>
@@ -63,7 +72,25 @@ const BookCarousel = () => {
         <button onClick={prevBook} className="carousel-btn">
           ⬅
         </button>
-        <div className="book-item" style={{ display: "flex", gap: "30px", alignItems: "center" }}>
+        <div 
+          className="book-item" 
+          onClick={handleBookClick}
+          style={{ 
+            display: "flex", 
+            gap: "30px", 
+            alignItems: "center",
+            cursor: "pointer",
+            transition: "transform 0.2s, opacity 0.2s",
+          }}
+          onMouseOver={(e) => {
+            (e.currentTarget as HTMLElement).style.transform = "scale(1.02)";
+            (e.currentTarget as HTMLElement).style.opacity = "0.95";
+          }}
+          onMouseOut={(e) => {
+            (e.currentTarget as HTMLElement).style.transform = "scale(1)";
+            (e.currentTarget as HTMLElement).style.opacity = "1";
+          }}
+        >
           <img src={currentBook.image} alt={currentBook.title} style={{ maxHeight: "300px" }} />
           <div style={{ flex: 1, maxWidth: "400px" }}>
             <h3 style={{ margin: "0 0 8px 0", fontSize: "24px", fontWeight: "600" }}>
