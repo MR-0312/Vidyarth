@@ -8,7 +8,7 @@ const LoggingService = require('../services/loggingService');
 // @route   POST api/reviews/:bookId
 // @desc    Add a review for a book
 // @access  Private
-router.post('/:bookId', [auth, [
+router.post('/:bookId', [auth(), [
   check('rating', 'Rating is required').isInt({ min: 1, max: 5 }),
   check('comment', 'Comment is required').not().isEmpty()
 ]], async (req, res) => {

@@ -15,7 +15,7 @@ const tokenBlacklist = require('../services/tokenBlacklist');
 // @route   GET api/users/me
 // @desc    Get current user
 // @access  Private
-router.get('/me', auth, async (req, res) => {
+router.get('/me', auth(), async (req, res) => {
   try {
     const user = await UserQueries.getUserProfile(req.user.id);
     res.json(user);
@@ -101,7 +101,7 @@ router.put('/profile', [auth,
 // @route   POST api/users/logout
 // @desc    Logout user
 // @access  Private
-router.post('/logout', auth, async (req, res) => {
+router.post('/logout', auth(), async (req, res) => {
   try {
     // Blacklist the token to prevent reuse
     const token = req.token;

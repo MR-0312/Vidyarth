@@ -7,7 +7,7 @@ const LoggingService = require('../services/loggingService');
  * GET /api/analytics/dashboard
  * Get complete analytics dashboard summary
  */
-router.get('/dashboard', auth, async (req, res) => {
+router.get('/dashboard', auth(), async (req, res) => {
   try {
     const days = parseInt(req.query.days) || 30;
 
@@ -43,7 +43,7 @@ router.get('/dashboard', auth, async (req, res) => {
  * GET /api/analytics/activities
  * Get paginated user activities
  */
-router.get('/activities', auth, async (req, res) => {
+router.get('/activities', auth(), async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 50;
@@ -69,7 +69,7 @@ router.get('/activities', auth, async (req, res) => {
  * GET /api/analytics/reading-behavior
  * Get reading analytics and statistics
  */
-router.get('/reading-behavior', auth, async (req, res) => {
+router.get('/reading-behavior', auth(), async (req, res) => {
   try {
     const days = parseInt(req.query.days) || 30;
 
@@ -91,7 +91,7 @@ router.get('/reading-behavior', auth, async (req, res) => {
  * GET /api/analytics/engagement
  * Get user engagement score and metrics
  */
-router.get('/engagement', auth, async (req, res) => {
+router.get('/engagement', auth(), async (req, res) => {
   try {
     const days = parseInt(req.query.days) || 30;
 
@@ -110,7 +110,7 @@ router.get('/engagement', auth, async (req, res) => {
  * GET /api/analytics/most-viewed-books
  * Get most viewed books platform-wide (or by user)
  */
-router.get('/most-viewed-books', auth, async (req, res) => {
+router.get('/most-viewed-books', auth(), async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
     const days = parseInt(req.query.days) || 30;
@@ -133,7 +133,7 @@ router.get('/most-viewed-books', auth, async (req, res) => {
  * GET /api/analytics/search-patterns
  * Get user's search patterns and queries
  */
-router.get('/search-patterns', auth, async (req, res) => {
+router.get('/search-patterns', auth(), async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 20;
     const days = parseInt(req.query.days) || 30;
@@ -160,7 +160,7 @@ router.get('/search-patterns', auth, async (req, res) => {
  * GET /api/analytics/categories
  * Get popular categories platform-wide
  */
-router.get('/categories', auth, async (req, res) => {
+router.get('/categories', auth(), async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
     const days = parseInt(req.query.days) || 30;
@@ -183,7 +183,7 @@ router.get('/categories', auth, async (req, res) => {
  * GET /api/analytics/activity-frequency
  * Get activity frequency timeline
  */
-router.get('/activity-frequency', auth, async (req, res) => {
+router.get('/activity-frequency', auth(), async (req, res) => {
   try {
     const days = parseInt(req.query.days) || 7;
 
@@ -205,7 +205,7 @@ router.get('/activity-frequency', auth, async (req, res) => {
  * GET /api/analytics/session/:sessionId
  * Get all activities in a specific session
  */
-router.get('/session/:sessionId', auth, async (req, res) => {
+router.get('/session/:sessionId', auth(), async (req, res) => {
   try {
     const UserActivity = require('../models/UserActivity');
 
