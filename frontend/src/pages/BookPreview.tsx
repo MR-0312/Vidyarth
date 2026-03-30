@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import { bookService, Book } from "../services/bookService";
 
@@ -19,14 +18,12 @@ interface Review {
   userName?: string;
   rating: number;
   comment: string;
-  date?: string;
   createdAt?: string;
 }
 
 const BookPreview = () => {
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
-  const { theme } = useTheme();
   const { user } = useAuth();
   const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);
@@ -644,24 +641,7 @@ const BookPreview = () => {
           >
             {description}
           </p>
-          {description.length > 300 && (
-            <button
-              style={{
-                background: "none",
-                border: "none",
-                color: "#0078ff",
-                cursor: "pointer",
-                fontSize: "14px",
-                fontWeight: "600",
-                padding: "0",
-              }}
-              onClick={() => {
-                // Could expand description or navigate to full details
-              }}
-            >
-              Show More →
-            </button>
-          )}
+
         </div>
 
         {/* Rating and Review Section */}
@@ -848,7 +828,7 @@ const BookPreview = () => {
                           color: "var(--text-secondary)",
                         }}
                       >
-                        {formatDate(review.date || review.createdAt)}
+                        {formatDate(review.createdAt)}
                       </div>
                     </div>
                     <div
