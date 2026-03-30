@@ -487,22 +487,6 @@ const BookPreview = () => {
                   {book.file_format || book.fileFormat || "Digital"}
                 </div>
               </div>
-              <div>
-                <div
-                  style={{
-                    fontSize: "12px",
-                    color: "var(--text-secondary)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
-                    marginBottom: "4px",
-                  }}
-                >
-                  Status
-                </div>
-                <div style={{ fontSize: "16px", fontWeight: "600" }}>
-                  {book.status || "Available"}
-                </div>
-              </div>
             </div>
 
             {/* Categories */}
