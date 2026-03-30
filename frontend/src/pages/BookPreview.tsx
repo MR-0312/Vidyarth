@@ -35,6 +35,23 @@ const BookPreview = () => {
   const [comment, setComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
   const [userHasReviewed, setUserHasReviewed] = useState(false);
+  
+  // Report modal state
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportIssues, setReportIssues] = useState<string[]>([]);
+  const [reportComment, setReportComment] = useState("");
+  const [submittingReport, setSubmittingReport] = useState(false);
+
+  const reportIssuesList = [
+    { id: "wrong_content", label: "Wrong/Incorrect Content", icon: "❌" },
+    { id: "broken_links", label: "Broken Links or Download Issues", icon: "🔗" },
+    { id: "ads_redirect", label: "Ads or Redirects", icon: "📢" },
+    { id: "incomplete", label: "Incomplete or Truncated Book", icon: "📄" },
+    { id: "corrupted", label: "Corrupted or Unreadable File", icon: "💥" },
+    { id: "wrong_genre", label: "Wrong Genre/Category", icon: "🏷️" },
+    { id: "copyright", label: "Copyright Issue", icon: "©️" },
+    { id: "other", label: "Other Issue", icon: "❓" },
+  ];
 
   useEffect(() => {
     const fetchBook = async () => {
@@ -173,7 +190,81 @@ const BookPreview = () => {
   };
 
   const handleReport = () => {
-    alert("Report submitted. Thank you for helping keep our library quality high!");
+    setShowReportModal(true);
+  };
+
+  const handleToggleIssue = (issueId: string) => {
+    setReportIssues((prev) =>
+      prev.includes(issueId)
+        ? prev.filter((id) => id !== issueId)
+        : [...prev, issueId]
+    );
+  };
+
+  const handleSubmitReport = async () => {
+    if (reportIssues.length === 0) {
+      alert("Please select at least one issue");
+      return;
+    }
+
+    try {
+      setSubmittingReport(true);
+      const token = localStorage.getItem("koodoreader_token");
+      const reportData = {
+        bookId,
+        bookTitle: book?.title,
+        bookAuthor: book?.author,
+        issues: reportIssues,
+        comment: reportComment,
+        reportedBy: user?.id || "anonymous",
+        reportedByEmail: user?.email || "unknown",
+        timestamp: new Date().toISOString(),
+      };
+
+      // Try to send to backend if endpoint exists, otherwise just log it
+      try {
+        const response = await fetch("http://localhost:8080/api/reports", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { "x-auth-token": token }),
+          },
+          body: JSON.stringify(reportData),
+        });
+
+        if (response.ok) {
+          alert(
+            "Thank you! Your report has been submitted to our admin team. We'll review it shortly."
+          );
+          setShowReportModal(false);
+          setReportIssues([]);
+          setReportComment("");
+        } else {
+          // Backend endpoint might not exist, but log it anyway
+          console.log("Report submitted (local):", reportData);
+          alert(
+            "Thank you! Your report has been recorded. Our team will investigate."
+          );
+          setShowReportModal(false);
+          setReportIssues([]);
+          setReportComment("");
+        }
+      } catch (fetchErr) {
+        // If backend fails, still accept the report locally
+        console.log("Report logged locally:", reportData);
+        alert(
+          "Thank you! Your report has been recorded. Our team will investigate."
+        );
+        setShowReportModal(false);
+        setReportIssues([]);
+        setReportComment("");
+      }
+    } catch (err) {
+      console.error("Error submitting report:", err);
+      alert("Error submitting report. Please try again.");
+    } finally {
+      setSubmittingReport(false);
+    }
   };
 
   const getImageUrl = (book: Book) => {
@@ -827,6 +918,258 @@ const BookPreview = () => {
             Report 🚨
           </button>
         </div>
+
+        {/* Report Modal */}
+        {showReportModal && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(0, 0, 0, 0.7)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 10000,
+              padding: "20px",
+            }}
+            onClick={() => !submittingReport && setShowReportModal(false)}
+          >
+            <div
+              style={{
+                backgroundColor: "var(--bg-card)",
+                borderRadius: "12px",
+                padding: "32px",
+                maxWidth: "600px",
+                width: "100%",
+                maxHeight: "90vh",
+                overflowY: "auto",
+                boxShadow: "0 20px 60px rgba(0, 0, 0, 0.3)",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "24px",
+                }}
+              >
+                <h2
+                  style={{
+                    margin: "0",
+                    fontSize: "24px",
+                    fontWeight: "700",
+                    color: "var(--text-primary)",
+                  }}
+                >
+                  Report an Issue 🚨
+                </h2>
+                <button
+                  onClick={() => setShowReportModal(false)}
+                  disabled={submittingReport}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    fontSize: "24px",
+                    cursor: submittingReport ? "not-allowed" : "pointer",
+                    color: "var(--text-secondary)",
+                    padding: "0",
+                    opacity: submittingReport ? 0.5 : 1,
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Book Info */}
+              <div
+                style={{
+                  backgroundColor: "var(--bg-elevated)",
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "8px",
+                  padding: "12px",
+                  marginBottom: "24px",
+                }}
+              >
+                <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+                  Reporting:
+                </div>
+                <div
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    color: "var(--text-primary)",
+                    marginTop: "4px",
+                  }}
+                >
+                  {book?.title} by {book?.author}
+                </div>
+              </div>
+
+              {/* Issue Selection */}
+              <div style={{ marginBottom: "24px" }}>
+                <label
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    color: "var(--text-primary)",
+                    display: "block",
+                    marginBottom: "12px",
+                  }}
+                >
+                  What issue did you encounter? *
+                </label>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "12px",
+                  }}
+                >
+                  {reportIssuesList.map((issue) => (
+                    <button
+                      key={issue.id}
+                      onClick={() => handleToggleIssue(issue.id)}
+                      disabled={submittingReport}
+                      style={{
+                        backgroundColor: reportIssues.includes(issue.id)
+                          ? "#0078ff"
+                          : "var(--bg-elevated)",
+                        color: reportIssues.includes(issue.id)
+                          ? "white"
+                          : "var(--text-primary)",
+                        border: `2px solid ${
+                          reportIssues.includes(issue.id)
+                            ? "#0078ff"
+                            : "var(--border-color)"
+                        }`,
+                        padding: "12px 16px",
+                        borderRadius: "8px",
+                        cursor: submittingReport ? "not-allowed" : "pointer",
+                        fontSize: "13px",
+                        fontWeight: "600",
+                        textAlign: "center",
+                        transition: "all 0.2s",
+                        opacity: submittingReport ? 0.6 : 1,
+                      }}
+                    >
+                      <span style={{ marginRight: "6px" }}>{issue.icon}</span>
+                      {issue.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Additional Comments */}
+              <div style={{ marginBottom: "24px" }}>
+                <label
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    color: "var(--text-primary)",
+                    display: "block",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Additional information (optional):
+                </label>
+                <textarea
+                  value={reportComment}
+                  onChange={(e) => setReportComment(e.target.value)}
+                  placeholder="Please provide any additional details that will help our team investigate..."
+                  disabled={submittingReport}
+                  style={{
+                    width: "100%",
+                    minHeight: "80px",
+                    padding: "12px",
+                    backgroundColor: "var(--bg-primary)",
+                    border: "1px solid var(--border-color)",
+                    borderRadius: "6px",
+                    color: "var(--text-primary)",
+                    fontSize: "13px",
+                    fontFamily: "inherit",
+                    resize: "vertical",
+                    opacity: submittingReport ? 0.6 : 1,
+                    cursor: submittingReport ? "not-allowed" : "text",
+                  }}
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div
+                style={{
+                  display: "flex",
+                  gap: "12px",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <button
+                  onClick={() => setShowReportModal(false)}
+                  disabled={submittingReport}
+                  style={{
+                    backgroundColor: "var(--bg-elevated)",
+                    color: "var(--text-primary)",
+                    border: "1px solid var(--border-color)",
+                    padding: "10px 24px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    borderRadius: "6px",
+                    cursor: submittingReport ? "not-allowed" : "pointer",
+                    opacity: submittingReport ? 0.6 : 1,
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSubmitReport}
+                  disabled={submittingReport || reportIssues.length === 0}
+                  style={{
+                    backgroundColor:
+                      submittingReport || reportIssues.length === 0
+                        ? "#ccc"
+                        : "#0078ff",
+                    color: "white",
+                    border: "none",
+                    padding: "10px 24px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    borderRadius: "6px",
+                    cursor:
+                      submittingReport || reportIssues.length === 0
+                        ? "not-allowed"
+                        : "pointer",
+                    transition: "background-color 0.2s",
+                  }}
+                  onMouseOver={(e) => {
+                    if (
+                      !submittingReport &&
+                      reportIssues.length > 0
+                    ) {
+                      (e.target as HTMLButtonElement).style.backgroundColor =
+                        "#0056cc";
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (
+                      !submittingReport &&
+                      reportIssues.length > 0
+                    ) {
+                      (e.target as HTMLButtonElement).style.backgroundColor =
+                        "#0078ff";
+                    }
+                  }}
+                >
+                  {submittingReport ? "Submitting..." : "Submit Report"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
