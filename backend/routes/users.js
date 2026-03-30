@@ -6,6 +6,7 @@ const upload = require('../middleware/upload');
 const { UserQueries } = require('../db/queries');
 const { uploadFile, deleteFile } = require('../services/storageService');
 const LoggingService = require('../services/loggingService');
+const tokenBlacklist = require('../services/tokenBlacklist');
 
 
 // Note: Register and login functionality is handled in auth.js route
@@ -14,7 +15,7 @@ const LoggingService = require('../services/loggingService');
 // @route   GET api/users/me
 // @desc    Get current user
 // @access  Private
-router.get('/me', auth, async (req, res) => {
+router.get('/me', auth(), async (req, res) => {
   try {
     const user = await UserQueries.getUserProfile(req.user.id);
     res.json(user);
@@ -100,8 +101,15 @@ router.put('/profile', [auth,
 // @route   POST api/users/logout
 // @desc    Logout user
 // @access  Private
-router.post('/logout', auth, async (req, res) => {
+router.post('/logout', auth(), async (req, res) => {
   try {
+    // Blacklist the token to prevent reuse
+    const token = req.token;
+    if (token) {
+      // 1 hour expiration (3600 seconds) - tokens auto-remove from blacklist after expiration
+      tokenBlacklist.addToBlacklist(token, 3600);
+    }
+
     // Log LOGOUT activity
     try {
       await LoggingService.logActivity(req.user.id, 'LOGOUT', {

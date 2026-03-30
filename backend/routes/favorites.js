@@ -7,7 +7,7 @@ const LoggingService = require('../services/loggingService');
 // @route   POST api/favorites/:bookId
 // @desc    Add a book to user's favorites
 // @access  Private
-router.post('/:bookId', auth, async (req, res) => {
+router.post('/:bookId', auth(), async (req, res) => {
   try {
     const book = await BookQueries.findById(req.params.bookId);
     if (!book) {
@@ -44,7 +44,7 @@ router.post('/:bookId', auth, async (req, res) => {
 // @route   DELETE api/favorites/:bookId
 // @desc    Remove a book from user's favorites
 // @access  Private
-router.delete('/:bookId', auth, async (req, res) => {
+router.delete('/:bookId', auth(), async (req, res) => {
   try {
     await FavoriteQueries.remove(req.user.id, req.params.bookId);
 
@@ -70,7 +70,7 @@ router.delete('/:bookId', auth, async (req, res) => {
 // @route   GET api/favorites
 // @desc    Get user's favorite books
 // @access  Private
-router.get('/', auth, async (req, res) => {
+router.get('/', auth(), async (req, res) => {
   try {
     const favorites = await FavoriteQueries.getByUserId(req.user.id);
     

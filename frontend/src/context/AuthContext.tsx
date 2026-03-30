@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
+const API_BASE_URL = "http://localhost:8080/api";
+
 interface User {
   name: string;
   email: string;
@@ -8,14 +10,14 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (user: User) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   login: () => {},
-  logout: () => {},
+  logout: async () => {},
   isAuthenticated: false,
 });
 
@@ -53,7 +55,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.setItem("koodoreader_user", JSON.stringify(userData));
   };
 
-  const logout = () => {
+  const logout = async () => {
+    const token = localStorage.getItem("koodoreader_token");
+    
+    // Call backend logout endpoint to blacklist the token
+    if (token) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/users/logout`, {
+          method: 'POST',
+          headers: {
+            'x-auth-token': token,
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!response.ok) {
+          console.error('Backend logout failed:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error calling logout endpoint:', error);
+      }
+    }
+    
+    // Clear local state regardless of backend response
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem("koodoreader_user");

@@ -3,7 +3,6 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const upload = require('../middleware/upload');
 const auth = require('../middleware/auth');
-const optionalAuth = require('../middleware/optionalAuth');
 const { ContributionQueries, BookQueries } = require('../db/queries');
 const { uploadFile } = require('../services/storageService');
 const LoggingService = require('../services/loggingService');
@@ -22,7 +21,7 @@ function getFileFormat(fileName) {
 // @access  Public
 router.post(
   '/',
-  optionalAuth,
+  auth(false),
   upload.fields([
     { name: 'cover', maxCount: 1 },
     { name: 'ebook', maxCount: 1 }
@@ -150,7 +149,7 @@ router.get('/count', async (req, res) => {
 // @route   GET api/contributions/me
 // @desc    Get current user's contributions
 // @access  Private
-router.get('/me', auth, async (req, res) => {
+router.get('/me', auth(), async (req, res) => {
   try {
     const contributions = await ContributionQueries.getByUserId(req.user.id);
     res.json(contributions);

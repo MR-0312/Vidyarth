@@ -246,7 +246,7 @@ router.put('/:id', [auth, upload.fields([
 // @route   DELETE api/books/:id
 // @desc    Delete a book
 // @access  Private
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth(), async (req, res) => {
   try {
     const book = await BookQueries.findById(req.params.id);
 

@@ -7,6 +7,18 @@ const Navbar = () => {
   const user = auth?.user;
   const logout = auth?.logout;
 
+  const handleLogout = async () => {
+    if (logout) {
+      try {
+        await logout();
+      } catch (error) {
+        console.error('Logout failed:', error);
+        // Even if logout fails, clear local state
+        // This is handled in the logout function
+      }
+    }
+  };
+
   return (
     <nav className="navbar">
       <div className="logo">
@@ -20,7 +32,7 @@ const Navbar = () => {
         {user ? (
           <>
             <Link to="/read" className="nav-link">Read</Link>
-            <button onClick={logout} className="logout-btn">Logout</button>
+            <button onClick={handleLogout} className="logout-btn">Logout</button>
           </>
         ) : (
           <>
