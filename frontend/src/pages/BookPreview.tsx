@@ -21,6 +21,16 @@ interface Review {
   createdAt?: string;
 }
 
+interface Chapter {
+  id?: string;
+  book_id?: string;
+  chapter_number: number;
+  title: string;
+  start_page?: number;
+  end_page?: number;
+  created_at?: string;
+}
+
 const BookPreview = () => {
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
@@ -44,6 +54,11 @@ const BookPreview = () => {
   const [reportIssues, setReportIssues] = useState<string[]>([]);
   const [reportComment, setReportComment] = useState("");
   const [submittingReport, setSubmittingReport] = useState(false);
+
+  // Chapters state
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [loadingChapters, setLoadingChapters] = useState(false);
+  const [showChapters, setShowChapters] = useState(false);
 
   const reportIssuesList = [
     { id: "wrong_content", label: "Wrong/Incorrect Content", icon: "❌" },
@@ -104,6 +119,27 @@ const BookPreview = () => {
 
     fetchReviews();
   }, [bookId, user]);
+
+  // Fetch chapters for the book
+  useEffect(() => {
+    const fetchChapters = async () => {
+      if (!bookId) return;
+      try {
+        setLoadingChapters(true);
+        const response = await fetch(`http://localhost:8080/api/books/${bookId}/chapters`);
+        if (response.ok) {
+          const chaptersData = await response.json();
+          setChapters(chaptersData);
+        }
+      } catch (err) {
+        console.error("Error fetching chapters:", err);
+      } finally {
+        setLoadingChapters(false);
+      }
+    };
+
+    fetchChapters();
+  }, [bookId]);
 
   const handleReadNow = () => {
     if (!user) {
@@ -626,6 +662,131 @@ const BookPreview = () => {
             {description}
           </p>
 
+        </div>
+
+        {/* Chapters Section */}
+        <div
+          style={{
+            backgroundColor: "var(--bg-card)",
+            border: "1px solid var(--border-color)",
+            borderRadius: "8px",
+            padding: "24px",
+            marginBottom: "24px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: chapters.length > 0 ? "16px" : "0",
+              cursor: chapters.length > 0 ? "pointer" : "default",
+            }}
+            onClick={() => {
+              if (chapters.length > 0) setShowChapters(!showChapters);
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "18px",
+                fontWeight: "600",
+                margin: "0",
+                color: "var(--text-primary)",
+              }}
+            >
+              📚 Table of Contents {chapters.length > 0 && `(${chapters.length} chapters)`}
+            </h3>
+            {chapters.length > 0 && (
+              <span
+                style={{
+                  fontSize: "20px",
+                  transition: "transform 0.3s",
+                  transform: showChapters ? "rotate(180deg)" : "rotate(0deg)",
+                }}
+              >
+                ▼
+              </span>
+            )}
+          </div>
+
+          {chapters.length === 0 ? (
+            <div
+              style={{
+                textAlign: "center",
+                color: "var(--text-secondary)",
+                padding: "20px",
+                fontSize: "14px",
+              }}
+            >
+              No chapter information available for this book yet.
+            </div>
+          ) : (
+            showChapters && (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "8px",
+                  maxHeight: "500px",
+                  overflowY: "auto",
+                }}
+              >
+                {loadingChapters ? (
+                  <div style={{ color: "var(--text-secondary)", textAlign: "center" }}>
+                    Loading chapters...
+                  </div>
+                ) : (
+                  chapters.map((chapter, idx) => (
+                    <div
+                      key={chapter.id || idx}
+                      style={{
+                        padding: "12px",
+                        backgroundColor: "var(--bg-elevated)",
+                        border: "1px solid var(--border-color)",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                      onMouseOver={(e) => {
+                        (e.currentTarget).style.backgroundColor = "#0078ff";
+                        (e.currentTarget).style.color = "white";
+                      }}
+                      onMouseOut={(e) => {
+                        (e.currentTarget).style.backgroundColor = "var(--bg-elevated)";
+                        (e.currentTarget).style.color = "inherit";
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontSize: "14px",
+                            fontWeight: "600",
+                            color: "var(--text-primary)",
+                            marginBottom: "4px",
+                          }}
+                        >
+                          Chapter {chapter.chapter_number}: {chapter.title}
+                        </div>
+                        {(chapter.start_page || chapter.end_page) && (
+                          <div
+                            style={{
+                              fontSize: "12px",
+                              color: "var(--text-secondary)",
+                            }}
+                          >
+                            Pages {chapter.start_page || "?"} - {chapter.end_page || "?"}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )
+          )}
         </div>
 
         {/* Rating and Review Section */}

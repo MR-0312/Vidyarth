@@ -399,6 +399,90 @@ const ContributionQueries = {
   }
 };
 
+// ==================== CHAPTER QUERIES ====================
+
+const ChapterQueries = {
+  // Create chapters for a book
+  async create(chapterData) {
+    const { data, error } = await supabase
+      .from('chapters')
+      .insert([chapterData])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Create multiple chapters at once
+  async createBulk(chaptersData) {
+    const { data, error } = await supabase
+      .from('chapters')
+      .insert(chaptersData)
+      .select();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Get chapters by book ID
+  async getByBookId(bookId) {
+    const { data, error } = await supabase
+      .from('chapters')
+      .select('*')
+      .eq('book_id', bookId)
+      .order('chapter_number', { ascending: true });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Get single chapter
+  async getById(chapterId) {
+    const { data, error } = await supabase
+      .from('chapters')
+      .select('*')
+      .eq('id', chapterId)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return data || null;
+  },
+
+  // Update chapter
+  async update(chapterId, updates) {
+    const { data, error } = await supabase
+      .from('chapters')
+      .update(updates)
+      .eq('id', chapterId)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Delete chapter
+  async delete(chapterId) {
+    const { error } = await supabase
+      .from('chapters')
+      .delete()
+      .eq('id', chapterId);
+    
+    if (error) throw error;
+  },
+
+  // Delete all chapters for a book
+  async deleteByBookId(bookId) {
+    const { error } = await supabase
+      .from('chapters')
+      .delete()
+      .eq('book_id', bookId);
+    
+    if (error) throw error;
+  }
+};
+
 // ==================== USER ACTIVITY QUERIES ====================
 
 const ActivityQueries = {
@@ -454,5 +538,6 @@ module.exports = {
   ReviewQueries,
   FavoriteQueries,
   ContributionQueries,
-  ActivityQueries
+  ActivityQueries,
+  ChapterQueries
 };

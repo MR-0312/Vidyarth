@@ -36,6 +36,7 @@ const UploadModal = ({ isOpen, onClose, onSuccess }: UploadModalProps) => {
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
+    details?: string;
   } | null>(null);
   const [showAnonymityChoice, setShowAnonymityChoice] = useState(false);
   const [uploadAsAnonymous, setUploadAsAnonymous] = useState(false);
@@ -182,9 +183,13 @@ const UploadModal = ({ isOpen, onClose, onSuccess }: UploadModalProps) => {
 
       if (response.ok) {
         const data = await response.json();
+        const chaptersMsg = data.chaptersExtracted 
+          ? ` ${data.chaptersExtracted} chapters were automatically extracted.`
+          : '';
         setMessage({
           type: "success",
           text: data.message || "Thank you for your contribution!",
+          details: chaptersMsg
         });
         setFormData({
           title: "",
@@ -378,7 +383,16 @@ const UploadModal = ({ isOpen, onClose, onSuccess }: UploadModalProps) => {
       >
         <h2 style={titleStyles}>Contribute a Book</h2>
 
-        {message && <div style={messageStyles}>{message.text}</div>}
+        {message && (
+          <div style={messageStyles}>
+            <div>{message.text}</div>
+            {message.details && (
+              <div style={{ marginTop: "8px", fontSize: "13px", opacity: 0.9 }}>
+                ✨ {message.details}
+              </div>
+            )}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           {/* Title */}
