@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import Sidebar from "../components/Sidebar";
@@ -42,6 +43,7 @@ const sidebarItemsWithIcons = SIDEBAR_ITEMS.map((item) => ({
 }));
 
 const Library = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
@@ -445,6 +447,7 @@ const Library = () => {
                   key={book.id}
                   book={book}
                   viewMode={viewMode}
+                  navigate={navigate}
                 />
               ))}
             </div>
@@ -482,6 +485,7 @@ interface BookCardProps {
     rating?: number;
   };
   viewMode: "grid" | "list";
+  navigate: any;
 }
 
 // Helper component for category display with hoverable card
@@ -587,10 +591,15 @@ const CategoryTags = ({ categories, maxDisplay = 2 }: { categories?: string[]; m
   );
 };
 
-const BookCard = ({ book, viewMode }: BookCardProps) => {
+const BookCard = ({ book, viewMode, navigate }: BookCardProps) => {
+  const handleCardClick = () => {
+    navigate(`/preview/${book.id}`);
+  };
+
   if (viewMode === "list") {
     return (
       <div
+        onClick={handleCardClick}
         style={{
           display: "flex",
           borderRadius: "8px",
@@ -602,6 +611,14 @@ const BookCard = ({ book, viewMode }: BookCardProps) => {
           gap: "15px",
           padding: "12px",
           border: "1px solid var(--border-color)",
+        }}
+        onMouseOver={(e) => {
+          (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)";
+          (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 20px rgba(0, 0, 0, 0.15)";
+        }}
+        onMouseOut={(e) => {
+          (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+          (e.currentTarget as HTMLElement).style.boxShadow = "none";
         }}
       >
         <div
@@ -709,6 +726,7 @@ const BookCard = ({ book, viewMode }: BookCardProps) => {
 
   return (
     <div
+      onClick={handleCardClick}
       style={{
         display: "flex",
         flexDirection: "column",
@@ -719,6 +737,14 @@ const BookCard = ({ book, viewMode }: BookCardProps) => {
         cursor: "pointer",
         height: "100%",
         border: "1px solid var(--border-color)",
+      }}
+      onMouseOver={(e) => {
+        (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)";
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 20px rgba(0, 0, 0, 0.15)";
+      }}
+      onMouseOut={(e) => {
+        (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+        (e.currentTarget as HTMLElement).style.boxShadow = "none";
       }}
     >
       <div
