@@ -8,7 +8,13 @@ interface Review {
   _id?: string;
   id?: string;
   user?: {
-    name: string;
+    name?: string;
+    username?: string;
+  };
+  users?: {
+    id?: string;
+    username?: string;
+    profile_picture?: string;
   };
   userName?: string;
   rating: number;
@@ -834,7 +840,7 @@ const BookPreview = () => {
                           marginBottom: "4px",
                         }}
                       >
-                        {review.user?.name || review.userName || "Anonymous"}
+                        {review.users?.username || review.user?.username || review.user?.name || review.userName || "Anonymous"}
                       </div>
                       <div
                         style={{
