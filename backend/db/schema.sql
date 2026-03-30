@@ -59,6 +59,19 @@ CREATE TABLE IF NOT EXISTS favorites (
   UNIQUE(user_id, book_id)
 );
 
+-- Create Chapters table
+CREATE TABLE IF NOT EXISTS chapters (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  book_id UUID NOT NULL REFERENCES books(id) ON DELETE CASCADE,
+  chapter_number INTEGER NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  start_page INTEGER,
+  end_page INTEGER,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(book_id, chapter_number)
+);
+
 -- Create User Activity table
 CREATE TABLE IF NOT EXISTS user_activities (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -80,3 +93,4 @@ CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON favorites(user_id);
 CREATE INDEX IF NOT EXISTS idx_favorites_book_id ON favorites(book_id);
 CREATE INDEX IF NOT EXISTS idx_user_activities_user_id ON user_activities(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_activities_type ON user_activities(activity_type);
+CREATE INDEX IF NOT EXISTS idx_chapters_book_id ON chapters(book_id);

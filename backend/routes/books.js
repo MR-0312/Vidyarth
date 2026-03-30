@@ -3,8 +3,9 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const auth = require('../middleware/auth');
 const upload = require('../middleware/upload');
-const { BookQueries, UserQueries, ReviewQueries } = require('../db/queries');
+const { BookQueries, UserQueries, ReviewQueries, ChapterQueries } = require('../db/queries');
 const { uploadFile, deleteFile } = require('../services/storageService');
+const { parseChapters } = require('../services/ebookParserService');
 const LoggingService = require('../services/loggingService');
 
 // Helper: derive file format from file extension
@@ -105,16 +106,47 @@ router.post('/', [auth, upload.fields([
       status: 'pending'
     });
 
+    // Parse chapters from the uploaded ebook
+    let chapters = [];
+    let chapterCount = 0;
+    try {
+      chapters = await parseChapters(req.files['ebook'][0].buffer, fileFormat);
+      
+      if (chapters.length > 0) {
+        // Add book_id to each chapter
+        const chaptersWithBookId = chapters.map(ch => ({
+          ...ch,
+          book_id: newBook.id
+        }));
+
+        // Save chapters to database
+        await ChapterQueries.createBulk(chaptersWithBookId);
+        chapterCount = chapters.length;
+        console.log(`Successfully parsed ${chapterCount} chapters for book: ${title}`);
+      }
+    } catch (parseErr) {
+      console.error('Error parsing chapters:', parseErr);
+      // If chapter parsing fails, continue without chapters
+      // This is not a critical error
+    }
+
     // Log ADD_BOOK activity
     try {
       await LoggingService.logActivity(req.user.id, 'ADD_BOOK', {
         bookId: newBook.id,
+        chapterCount,
         ipAddress: req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress,
         userAgent: req.headers['user-agent'],
       });
     } catch (logErr) {
       console.error('Error logging add book:', logErr);
     }
+
+    res.json({
+      msg: 'Book uploaded successfully',
+      book: newBook,
+      chaptersExtracted: chapterCount
+    });
 
   } catch (err) {
     console.error(err.message);
@@ -327,6 +359,135 @@ router.get('/search', async (req, res) => {
       totalPages: Math.ceil(total / limit),
       totalBooks: searchedBooks.length
     });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ msg: 'Server Error' });
+  }
+});
+
+// ==================== CHAPTER ROUTES ====================
+
+// @route   GET api/books/:bookId/chapters
+// @desc    Get all chapters for a book
+// @access  Public
+router.get('/:bookId/chapters', async (req, res) => {
+  try {
+    const { bookId } = req.params;
+    
+    // Verify book exists
+    const book = await BookQueries.findById(bookId);
+    if (!book) {
+      return res.status(404).json({ msg: 'Book not found' });
+    }
+
+    const chapters = await ChapterQueries.getByBookId(bookId);
+    res.json(chapters);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ msg: 'Server Error' });
+  }
+});
+
+// @route   POST api/books/:bookId/chapters
+// @desc    Add chapters to a book
+// @access  Private
+router.post('/:bookId/chapters', [auth, check('chapters', 'Chapters array is required').isArray()], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  try {
+    const { bookId } = req.params;
+    const { chapters } = req.body;
+
+    // Verify book exists and user has permission
+    const book = await BookQueries.findById(bookId);
+    if (!book) {
+      return res.status(404).json({ msg: 'Book not found' });
+    }
+
+    // Check if user is the book owner
+    if (book.user_id !== req.user.id) {
+      return res.status(403).json({ msg: 'Not authorized to add chapters to this book' });
+    }
+
+    // Delete existing chapters for this book
+    await ChapterQueries.deleteByBookId(bookId);
+
+    // Create new chapters
+    const chaptersWithBookId = chapters.map(ch => ({
+      ...ch,
+      book_id: bookId
+    }));
+
+    const createdChapters = await ChapterQueries.createBulk(chaptersWithBookId);
+    res.json(createdChapters);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ msg: 'Server Error' });
+  }
+});
+
+// @route   PUT api/books/:bookId/chapters/:chapterId
+// @desc    Update a chapter
+// @access  Private
+router.put('/:bookId/chapters/:chapterId', [auth, 
+  check('title', 'Title is required').not().isEmpty(),
+  check('chapter_number', 'Chapter number is required').isInt()
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  try {
+    const { bookId, chapterId } = req.params;
+    const { title, chapter_number, start_page, end_page } = req.body;
+
+    // Verify book exists and user has permission
+    const book = await BookQueries.findById(bookId);
+    if (!book) {
+      return res.status(404).json({ msg: 'Book not found' });
+    }
+
+    if (book.user_id !== req.user.id) {
+      return res.status(403).json({ msg: 'Not authorized to update chapters' });
+    }
+
+    const updatedChapter = await ChapterQueries.update(chapterId, {
+      title,
+      chapter_number,
+      start_page,
+      end_page
+    });
+
+    res.json(updatedChapter);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ msg: 'Server Error' });
+  }
+});
+
+// @route   DELETE api/books/:bookId/chapters/:chapterId
+// @desc    Delete a chapter
+// @access  Private
+router.delete('/:bookId/chapters/:chapterId', auth, async (req, res) => {
+  try {
+    const { bookId, chapterId } = req.params;
+
+    // Verify book exists and user has permission
+    const book = await BookQueries.findById(bookId);
+    if (!book) {
+      return res.status(404).json({ msg: 'Book not found' });
+    }
+
+    if (book.user_id !== req.user.id) {
+      return res.status(403).json({ msg: 'Not authorized to delete chapters' });
+    }
+
+    await ChapterQueries.delete(chapterId);
+    res.json({ msg: 'Chapter deleted' });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ msg: 'Server Error' });

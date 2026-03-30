@@ -3,8 +3,9 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const upload = require('../middleware/upload');
 const auth = require('../middleware/auth');
-const { ContributionQueries, BookQueries } = require('../db/queries');
+const { ContributionQueries, BookQueries, ChapterQueries } = require('../db/queries');
 const { uploadFile } = require('../services/storageService');
+const { parseChapters } = require('../services/ebookParserService');
 const LoggingService = require('../services/loggingService');
 
 // Helper: derive file format from file name
@@ -76,6 +77,28 @@ router.post(
         status: 'pending'
       });
 
+      // Parse chapters from the uploaded ebook
+      let chaptersExtracted = 0;
+      try {
+        const chapters = await parseChapters(req.files.ebook[0].buffer, fileFormat);
+        
+        if (chapters.length > 0) {
+          // Add book_id to each chapter
+          const chaptersWithBookId = chapters.map(ch => ({
+            ...ch,
+            book_id: newBook.id
+          }));
+
+          // Save chapters to database
+          await ChapterQueries.createBulk(chaptersWithBookId);
+          chaptersExtracted = chapters.length;
+          console.log(`Successfully parsed ${chaptersExtracted} chapters for contribution: ${title}`);
+        }
+      } catch (parseErr) {
+        console.error('Error parsing chapters:', parseErr);
+        // If chapter parsing fails, continue without chapters
+      }
+
       // Create contribution record if tracked
       let contribution = null;
       if (trackAsContribution) {
@@ -88,7 +111,8 @@ router.post(
             metadata: {
               title: newBook.title,
               author: newBook.author,
-              contributionId: contribution.id
+              contributionId: contribution.id,
+              chaptersExtracted
             }
           });
         } catch (logErr) {
@@ -98,6 +122,7 @@ router.post(
 
       res.json({
         message: 'Thank you for your contribution!',
+        chaptersExtracted,
         contribution: contribution ? {
           id: contribution.id,
           bookId: newBook.id,
