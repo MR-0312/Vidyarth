@@ -34,6 +34,7 @@ const Read = () => {
   const [currentChapter, setCurrentChapter] = useState<Chapter | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [chapterPageCounts, setChapterPageCounts] = useState<{ [key: string]: number }>({});
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -116,6 +117,35 @@ const Read = () => {
 
     fetchBook();
   }, [bookId]);
+
+  // Fetch page counts for all chapters
+  useEffect(() => {
+    const fetchChapterPageCounts = async () => {
+      if (!bookId || chapters.length === 0) return;
+      
+      const pageCounts: { [key: string]: number } = {};
+      
+      for (const chapter of chapters) {
+        try {
+          const response = await fetch(`http://localhost:8080/api/books/${bookId}/chapters/${chapter.id}`);
+          if (response.ok) {
+            const chapterData = await response.json();
+            if (chapterData.content) {
+              pageCounts[chapter.id] = calculateChapterPages(chapterData.content);
+            } else if (chapter.end_page && chapter.start_page) {
+              pageCounts[chapter.id] = chapter.end_page - chapter.start_page + 1;
+            }
+          }
+        } catch (err) {
+          console.error(`Error fetching page count for chapter ${chapter.id}:`, err);
+        }
+      }
+      
+      setChapterPageCounts(pageCounts);
+    };
+    
+    fetchChapterPageCounts();
+  }, [bookId, chapters]);
 
   // Load chapter content when index changes
   useEffect(() => {
@@ -339,7 +369,9 @@ const Read = () => {
           style={{
             flex: 1,
             overflowY: "auto",
+            paddingRight: "8px",
           }}
+          className="hide-scrollbar"
         >
           {chapters.length === 0 ? (
             <div
@@ -387,11 +419,13 @@ const Read = () => {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
                   <div style={{ flex: 1 }}>{chapter.title}</div>
                   <span style={{ fontSize: "12px", opacity: 0.7, marginLeft: "10px", whiteSpace: "nowrap" }}>
-                    {chapter.content 
-                      ? `${calculateChapterPages(chapter.content)}p`
-                      : chapter.end_page && chapter.start_page
-                        ? `${chapter.end_page - chapter.start_page + 1}p`
-                        : "~"
+                    {chapterPageCounts[chapter.id]
+                      ? `${chapterPageCounts[chapter.id]} Pages`
+                      : chapter.content 
+                        ? `${calculateChapterPages(chapter.content)} Pages`
+                        : chapter.end_page && chapter.start_page
+                          ? `${chapter.end_page - chapter.start_page + 1} Pages`
+                          : "~"
                     }
                   </span>
                 </div>
@@ -462,6 +496,39 @@ const Read = () => {
                 y2="18"
                 stroke="currentColor"
                 strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+
+          <button
+            onClick={() => navigate("/library")}
+            style={{
+              background: "none",
+              border: "none",
+              color: themeStyles.color,
+              cursor: "pointer",
+              padding: "5px",
+              display: "flex",
+              alignItems: "center",
+              marginLeft: "10px",
+              transition: "opacity 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = "0.7";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = "1";
+            }}
+            title="Back to Library"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M3 12l9-9 9 9v7h-2v-5h-14v5H3v-7z"
+                stroke="currentColor"
+                fill="none"
+                strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
