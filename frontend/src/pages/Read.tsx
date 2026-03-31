@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 interface Chapter {
@@ -33,6 +33,40 @@ const Read = () => {
   const [currentChapter, setCurrentChapter] = useState<Chapter | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pageContent, setPageContent] = useState('');
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Calculate lines that fit per page based on available space
+  const calculateLinesPerPage = () => {
+    // Available height for content:
+    // Total height - header (50px) - footer (50px) - top padding (30px) - bottom padding (30px) - margins and container padding (60px total)
+    // = window.innerHeight - 220
+    const availableHeight = window.innerHeight - 220;
+    const lineHeight = fontSize * 1.65; // 1.6 line-height + small buffer
+    const estimatedLinesPerPage = Math.floor(availableHeight / lineHeight);
+    
+    // Apply a safety factor to ensure no overflow
+    return Math.max(Math.floor(estimatedLinesPerPage * 0.95), 5); // Minimum 5 lines, 95% to be safe
+  };
+
+  const paginateContent = (content: string) => {
+    if (!content) return [''];
+    
+    const lines = content.split('\n');
+    const linesPerPage = calculateLinesPerPage();
+    const pages: string[] = [];
+    
+    for (let i = 0; i < lines.length; i += linesPerPage) {
+      const pageLines = lines.slice(i, i + linesPerPage);
+      pages.push(pageLines.join('\n'));
+    }
+    
+    return pages.length > 0 ? pages : [''];
+  };
 
   // Fetch book and chapters
   useEffect(() => {
@@ -86,6 +120,18 @@ const Read = () => {
         if (response.ok) {
           const chapterData = await response.json();
           setCurrentChapter(chapterData);
+          
+          // Paginate the content
+          if (chapterData.content) {
+            const pages = paginateContent(chapterData.content);
+            setTotalPages(pages.length);
+            setPageContent(pages[0]);
+            setCurrentPage(1);
+          } else {
+            setPageContent('');
+            setTotalPages(1);
+            setCurrentPage(1);
+          }
         }
       } catch (err) {
         console.error('Error loading chapter:', err);
@@ -95,14 +141,45 @@ const Read = () => {
     loadChapterContent();
   }, [bookId, chapters, currentChapterIndex]);
 
+  // Update page content when current page changes
+  useEffect(() => {
+    if (!currentChapter?.content) return;
+    
+    const pages = paginateContent(currentChapter.content);
+    if (currentPage >= 1 && currentPage <= pages.length) {
+      setPageContent(pages[currentPage - 1]);
+    }
+  }, [currentPage, currentChapter, fontSize]);
+
+  // Recalculate total pages when font size changes
+  useEffect(() => {
+    if (!currentChapter?.content) return;
+    
+    const pages = paginateContent(currentChapter.content);
+    setTotalPages(pages.length);
+    
+    // Ensure current page is still valid
+    if (currentPage > pages.length) {
+      setCurrentPage(Math.max(1, pages.length));
+    }
+  }, [fontSize]);
+
   const handlePreviousChapter = () => {
-    if (currentChapterIndex > 0) {
+    if (currentPage > 1) {
+      // Go to previous page in current chapter
+      setCurrentPage(currentPage - 1);
+    } else if (currentChapterIndex > 0) {
+      // Go to last page of previous chapter
       setCurrentChapterIndex(currentChapterIndex - 1);
     }
   };
 
   const handleNextChapter = () => {
-    if (currentChapterIndex < chapters.length - 1) {
+    if (currentPage < totalPages) {
+      // Go to next page in current chapter
+      setCurrentPage(currentPage + 1);
+    } else if (currentChapterIndex < chapters.length - 1) {
+      // Go to first page of next chapter
       setCurrentChapterIndex(currentChapterIndex + 1);
     }
   };
@@ -118,7 +195,7 @@ const Read = () => {
       document.title = `Reading: ${book.title} - ${currentChapter.title}`;
     }
 
-    // Add keyboard event listeners for chapter navigation
+    // Add keyboard event listeners for page/chapter navigation
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
         handlePreviousChapter();
@@ -129,7 +206,7 @@ const Read = () => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentChapterIndex, chapters.length, book, currentChapter]);
+  }, [currentPage, totalPages, currentChapterIndex, chapters.length, book, currentChapter]);
 
   const getThemeStyles = () => {
     switch (theme) {
@@ -354,7 +431,7 @@ const Read = () => {
               fontWeight: "500",
             }}
           >
-            {currentChapter ? currentChapter.title : "Loading..."}
+            {currentChapter ? `${currentChapter.title} • Page ${currentPage}/${totalPages}` : "Loading..."}
           </div>
 
           <button
@@ -556,12 +633,13 @@ const Read = () => {
             flex: 1,
             padding: "30px 0",
             backgroundColor: themeStyles.background,
-            overflowY: "auto",
+            overflowY: "hidden",
             display: "flex",
             justifyContent: "center",
           }}
         >
           <div
+            ref={contentRef}
             style={{
               maxWidth: "700px",
               width: "100%",
@@ -573,7 +651,10 @@ const Read = () => {
               lineHeight: "1.6",
               fontSize: `${fontSize}px`,
               margin: "0 20px",
-              minHeight: "100%",
+              height: "100%",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
             }}
           >
             {loading ? (
@@ -585,19 +666,32 @@ const Read = () => {
                 {error}
               </div>
             ) : currentChapter ? (
-              <div>
-                <h1 style={{ margin: "0 0 20px 0", fontSize: `${fontSize + 8}px` }}>
+              <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+                <h1 style={{ margin: "0 0 20px 0", fontSize: `${fontSize + 8}px`, flexShrink: 0 }}>
                   {currentChapter.title}
                 </h1>
-                {currentChapter.content ? (
-                  <div style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
-                    {currentChapter.content}
-                  </div>
-                ) : (
-                  <div style={{ color: themeStyles.color, opacity: 0.7 }}>
-                    No content available for this chapter.
-                  </div>
-                )}
+                <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+                  {pageContent ? (
+                    <div style={{ 
+                      whiteSpace: "pre-wrap", 
+                      wordWrap: "break-word",
+                      overflowY: "auto",
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      paddingRight: "8px",
+                      scrollBehavior: "smooth",
+                    }}
+                    className="hide-scrollbar"
+                    >
+                      {pageContent}
+                    </div>
+                  ) : (
+                    <div style={{ color: themeStyles.color, opacity: 0.7 }}>
+                      No content available for this chapter.
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <div style={{ textAlign: "center", color: themeStyles.color, padding: "40px 0" }}>
@@ -621,14 +715,14 @@ const Read = () => {
         >
           <button
             onClick={handlePreviousChapter}
-            disabled={currentChapterIndex <= 0}
+            disabled={currentChapterIndex <= 0 && currentPage <= 1}
             style={{
               backgroundColor: "transparent",
               border: "none",
               padding: "8px 16px",
               borderRadius: "4px",
-              cursor: currentChapterIndex <= 0 ? "default" : "pointer",
-              opacity: currentChapterIndex <= 0 ? 0.5 : 1,
+              cursor: currentChapterIndex <= 0 && currentPage <= 1 ? "default" : "pointer",
+              opacity: currentChapterIndex <= 0 && currentPage <= 1 ? 0.5 : 1,
               display: "flex",
               alignItems: "center",
               color: themeStyles.color,
@@ -660,20 +754,20 @@ const Read = () => {
             }}
           >
             <span style={{ fontSize: "14px" }}>
-              Chapter {currentChapterIndex + 1} of {chapters.length}
+              Page {currentPage} of {totalPages} • Chapter {currentChapterIndex + 1} of {chapters.length}
             </span>
           </div>
 
           <button
             onClick={handleNextChapter}
-            disabled={currentChapterIndex >= chapters.length - 1}
+            disabled={currentChapterIndex >= chapters.length - 1 && currentPage >= totalPages}
             style={{
               backgroundColor: "transparent",
               border: "none",
               padding: "8px 16px",
               borderRadius: "4px",
-              cursor: currentChapterIndex >= chapters.length - 1 ? "default" : "pointer",
-              opacity: currentChapterIndex >= chapters.length - 1 ? 0.5 : 1,
+              cursor: currentChapterIndex >= chapters.length - 1 && currentPage >= totalPages ? "default" : "pointer",
+              opacity: currentChapterIndex >= chapters.length - 1 && currentPage >= totalPages ? 0.5 : 1,
               display: "flex",
               alignItems: "center",
               color: themeStyles.color,
@@ -698,6 +792,15 @@ const Read = () => {
           </button>
         </footer>
       </div>
+      <style>{`
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 };
