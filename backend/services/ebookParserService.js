@@ -2,6 +2,46 @@ const unzipper = require('unzipper');
 const xml2js = require('xml2js');
 const { Readable } = require('stream');
 
+// HTML sanitizer to clean extracted content
+const htmlSanitizer = (html) => {
+  if (!html) return '';
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove scripts
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')    // Remove styles
+    .substring(0, 100000); // Limit to prevent huge entries
+};
+
+/**
+ * Extract plain text content from HTML
+ */
+function extractTextFromHtml(html) {
+  if (!html) return '';
+  return html
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/\n\s*\n/g, '\n\n') // Clean up multiple newlines
+    .trim()
+    .substring(0, 50000); // Limit content
+}
+
+/**
+ * Extract content from XHTML file
+ */
+async function extractContentFromXhtml(buffer) {
+  try {
+    if (!buffer) return '';
+    const content = buffer.toString('utf-8');
+    const textContent = extractTextFromHtml(content);
+    return textContent;
+  } catch (err) {
+    console.error('Error extracting XHTML content:', err);
+    return '';
+  }
+}
+
 /**
  * Parse EPUB file and extract chapters
  * @param {Buffer} epubBuffer - The EPUB file as a buffer
@@ -96,7 +136,7 @@ async function parseEpubChapters(epubBuffer) {
           const ncxData = await xmlParser.parseStringPromise(entries[fullNcxPath]);
           const navPoints = ncxData?.ncx?.navMap?.[0]?.navPoint || [];
           
-          const extractedChapters = extractChaptersFromNavPoints(navPoints, 1);
+          const extractedChapters = await extractChaptersFromNavPoints(navPoints, 1, basePath, idToHref, entries);
           if (extractedChapters.length > 0) {
             return extractedChapters;
           }
@@ -108,18 +148,32 @@ async function parseEpubChapters(epubBuffer) {
 
     // Fallback: extract chapters from spine order
     let chapterNumber = 1;
+    const basePath = contentOpfPath.substring(0, contentOpfPath.lastIndexOf('/') + 1);
+    
     for (const item of spine) {
       const idref = item.$?.idref;
       if (idref && idToHref[idref]) {
         const href = idToHref[idref];
+        const fullPath = (basePath + href).replace(/\/\//g, '/');
         const fileName = href.split('/').pop();
         const title = `Chapter ${chapterNumber}`;
+        
+        // Try to extract content from the chapter file
+        let content = '';
+        if (entries[fullPath]) {
+          try {
+            content = await extractContentFromXhtml(entries[fullPath]);
+          } catch (err) {
+            console.error(`Error extracting content for chapter ${chapterNumber}:`, err);
+          }
+        }
         
         chapters.push({
           chapter_number: chapterNumber,
           title: cleanTitle(title),
           start_page: null,
-          end_page: null
+          end_page: null,
+          content: content || null
         });
         
         chapterNumber++;
@@ -134,13 +188,13 @@ async function parseEpubChapters(epubBuffer) {
 }
 
 /**
- * Recursively extract chapters from NCX navPoints
+ * Recursively extract chapters from NCX navPoints with content extraction
  */
-function extractChaptersFromNavPoints(navPoints, startNumber = 1) {
+async function extractChaptersFromNavPoints(navPoints, startNumber = 1, basePath = '', idToHref = {}, entries = {}) {
   const chapters = [];
   let chapterNumber = startNumber;
 
-  navPoints.forEach(point => {
+  for (const point of navPoints) {
     let title = point?.navLabel?.[0]?.text?.[0] || `Chapter ${chapterNumber}`;
     
     // Remove duplications BEFORE processing
@@ -150,22 +204,37 @@ function extractChaptersFromNavPoints(navPoints, startNumber = 1) {
     
     // Only add if it looks like a chapter, not just book parts
     if (shouldIncludeAsChapter(title)) {
+      // Extract content from the chapter's content file
+      let content = null;
+      try {
+        const content_src = point?.content?.[0]?.$?.src;
+        if (content_src) {
+          const fullContentPath = (basePath + content_src).replace(/\/\//g, '/');
+          if (entries[fullContentPath]) {
+            content = await extractContentFromXhtml(entries[fullContentPath]);
+          }
+        }
+      } catch (err) {
+        console.error(`Error extracting content for chapter "${title}":`, err);
+      }
+      
       chapters.push({
         chapter_number: chapterNumber,
         title: cleanTitle(title),
         start_page: null,
-        end_page: null
+        end_page: null,
+        content: content || null
       });
       chapterNumber++;
     }
 
     // Recursively process child navPoints
     if (point.navPoint && point.navPoint.length > 0) {
-      const childChapters = extractChaptersFromNavPoints(point.navPoint, chapterNumber);
+      const childChapters = await extractChaptersFromNavPoints(point.navPoint, chapterNumber, basePath, idToHref, entries);
       chapters.push(...childChapters);
       chapterNumber += childChapters.length;
     }
-  });
+  }
 
   return chapters;
 }
@@ -238,7 +307,8 @@ function generateDefaultChapters(estimatedPageCount) {
       chapter_number: i,
       title: `Chapter ${i}`,
       start_page: (i - 1) * pagesPerChapter + 1,
-      end_page: i === chaptersPerBook ? estimatedPageCount : i * pagesPerChapter
+      end_page: i === chaptersPerBook ? estimatedPageCount : i * pagesPerChapter,
+      content: null
     });
   }
 

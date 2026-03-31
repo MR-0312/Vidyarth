@@ -1,77 +1,135 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+
+interface Chapter {
+  id: string;
+  book_id: string;
+  chapter_number: number;
+  title: string;
+  content?: string;
+  start_page?: number;
+  end_page?: number;
+}
+
+interface Book {
+  id: string;
+  title: string;
+  author: string;
+}
 
 const Read = () => {
-  const { bookId } = useParams();
+  const { bookId } = useParams<{ bookId: string }>();
+  const navigate = useNavigate();
+  
   const [fontSize, setFontSize] = useState(16);
   const [theme, setTheme] = useState("light"); // light, dark, sepia
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(345);
   const [menuOpen, setMenuOpen] = useState(false);
+  
+  // Book and chapter state
+  const [book, setBook] = useState<Book | null>(null);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
+  const [currentChapter, setCurrentChapter] = useState<Chapter | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Book content - this would normally come from API
-  const bookContent = {
-    title: "The Shaman's Shadow",
-    author: "Elizabeth Rowe",
-    chapters: [
-      { id: 1, title: "Chapter 1: The Beginning", pages: [1, 15] },
-      { id: 2, title: "Chapter 2: The Encounter", pages: [16, 32] },
-      { id: 3, title: "Chapter 3: The Discovery", pages: [33, 48] },
-      { id: 4, title: "Chapter 4: The Journey", pages: [49, 67] },
-      { id: 5, title: "Chapter 5: The Challenge", pages: [68, 89] },
-      { id: 6, title: "Chapter 6: The Revelation", pages: [90, 110] },
-      { id: 7, title: "Chapter 7: The Conflict", pages: [111, 132] },
-      { id: 8, title: "Chapter 8: The Resolution", pages: [133, 156] },
-      { id: 9, title: "Chapter 9: The Aftermath", pages: [157, 172] },
-      { id: 10, title: "Chapter 10: New Beginnings", pages: [173, 195] },
-      { id: 11, title: "Chapter 11: Unexpected Turns", pages: [196, 215] },
-      { id: 12, title: "Chapter 12: Hidden Truths", pages: [216, 238] },
-      { id: 13, title: "Chapter 13: Facing the Past", pages: [239, 260] },
-      { id: 14, title: "Chapter 14: The Decision", pages: [261, 284] },
-      { id: 15, title: "Chapter 15: The Final Test", pages: [285, 310] },
-      { id: 16, title: "Chapter 16: Coming Full Circle", pages: [311, 334] },
-      { id: 17, title: "Epilogue", pages: [335, 345] },
-    ],
-    currentChapter: 3,
+  // Fetch book and chapters
+  useEffect(() => {
+    const fetchBook = async () => {
+      if (!bookId) return;
+      try {
+        setLoading(true);
+        
+        // Fetch book details
+        const bookResponse = await fetch(`http://localhost:8080/api/books/${bookId}`);
+        if (!bookResponse.ok) throw new Error('Failed to fetch book');
+        const bookData = await bookResponse.json();
+        setBook(bookData);
+
+        // Fetch chapters list
+        const chaptersResponse = await fetch(`http://localhost:8080/api/books/${bookId}/chapters`);
+        if (!chaptersResponse.ok) throw new Error('Failed to fetch chapters');
+        const chaptersData = await chaptersResponse.json();
+        setChapters(chaptersData);
+        
+        // Load first chapter content if available
+        if (chaptersData.length > 0) {
+          const firstChapter = chaptersData[0];
+          const contentResponse = await fetch(`http://localhost:8080/api/books/${bookId}/chapters/${firstChapter.id}`);
+          if (contentResponse.ok) {
+            const chapterData = await contentResponse.json();
+            setCurrentChapter(chapterData);
+          }
+        }
+        
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching book:', err);
+        setError('Failed to load book');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBook();
+  }, [bookId]);
+
+  // Load chapter content when index changes
+  useEffect(() => {
+    const loadChapterContent = async () => {
+      if (!bookId || chapters.length === 0 || currentChapterIndex < 0 || currentChapterIndex >= chapters.length) return;
+      
+      try {
+        const chapter = chapters[currentChapterIndex];
+        const response = await fetch(`http://localhost:8080/api/books/${bookId}/chapters/${chapter.id}`);
+        if (response.ok) {
+          const chapterData = await response.json();
+          setCurrentChapter(chapterData);
+        }
+      } catch (err) {
+        console.error('Error loading chapter:', err);
+      }
+    };
+
+    loadChapterContent();
+  }, [bookId, chapters, currentChapterIndex]);
+
+  const handlePreviousChapter = () => {
+    if (currentChapterIndex > 0) {
+      setCurrentChapterIndex(currentChapterIndex - 1);
+    }
   };
 
-  // Sample text for the current page
-  const sampleText = `
-  <h2>Chapter 3: The Discovery</h2>
-  <p>Sarah stepped carefully through the undergrowth, her feet finding the natural path between gnarled roots and moss-covered stones. The air was thick with the scent of damp earth and pine, a comforting smell that reminded her of childhood adventures in the woods behind her grandmother's house.</p>
-  <p>But these were not those woods. This forest felt ancient, watching, aware in a way she couldn't articulate. The shaman's directions had been clear: follow the stream until it splits around the large boulder, then take the eastern fork until you reach the clearing with the standing stones.</p>
-  <p>"Look for the stone that doesn't cast a shadow at noon," he had told her, his eyes clouded with cataracts but somehow seeing through her. "That's where you'll find what was lost."</p>
-  <p>The clearing appeared suddenly, as if the forest had drawn back its green curtains to reveal a perfect circle of standing stones. There were twelve of them, each twice her height and covered in lichen and symbols worn almost smooth by centuries of wind and rain. Sarah checked her watch: 11:53 AM.</p>
-  <p>She moved to the center of the circle and waited, studying each stone in turn. They all cast shadows now, dark fingers pointing inward as if indicating the heart of the circle. As the minutes passed, the shadows shortened, and at precisely noon, Sarah saw it—the third stone from the north entrance stood shadowless, illuminated perfectly by the sun overhead.</p>
-  <p>Her heart racing, she approached the stone, running her fingers over its rough surface, feeling for anything unusual. Near the base, her fingers found a small recess, hidden by the moss and dirt of ages. Inside was something smooth and cool to the touch. She carefully extracted it: a small figurine carved from jade, depicting a creature half-wolf, half-human.</p>
-  <p>The shaman's words came back to her: "The guardian waits to be awakened. Once found, the path between worlds opens."</p>
-  <p>As she held the figurine, it seemed to grow warm in her palm. A wind rose suddenly, circling the stones, and Sarah could have sworn she heard whispers in a language she didn't understand but somehow recognized. The shadows of the stones began to move, no longer following the dictates of the sun but swirling like liquid across the ground.</p>
-  <p>Sarah clutched the jade figurine tightly as the world around her began to shimmer and shift. She had found what was lost, but now she realized this was just the beginning of a much larger discovery.</p>
-  `;
+  const handleNextChapter = () => {
+    if (currentChapterIndex < chapters.length - 1) {
+      setCurrentChapterIndex(currentChapterIndex + 1);
+    }
+  };
+
+  const handleChapterSelect = (index: number) => {
+    setCurrentChapterIndex(index);
+    setSidebarOpen(false);
+  };
 
   useEffect(() => {
-    // Set up the chapter based on current page
-    const currentChapter = bookContent.chapters.find(
-      (chapter) =>
-        currentPage >= chapter.pages[0] && currentPage <= chapter.pages[1]
-    );
+    // Update document title
+    if (book && currentChapter) {
+      document.title = `Reading: ${book.title} - ${currentChapter.title}`;
+    }
 
-    // This would normally update more data or fetch the content for this page
-    document.title = `Reading: ${bookContent.title}`;
-
-    // Add keyboard event listeners for navigation
-    const handleKeyDown = (e) => {
+    // Add keyboard event listeners for chapter navigation
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
-        setCurrentPage((prev) => Math.max(prev - 1, 1));
+        handlePreviousChapter();
       } else if (e.key === "ArrowRight") {
-        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+        handleNextChapter();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentPage, totalPages]);
+  }, [currentChapterIndex, chapters.length, book, currentChapter]);
 
   const getThemeStyles = () => {
     switch (theme) {
@@ -141,7 +199,7 @@ const Read = () => {
               fontWeight: "600",
             }}
           >
-            {bookContent.title}
+            {book?.title || "Loading..."}
           </h2>
           <p
             style={{
@@ -150,7 +208,7 @@ const Read = () => {
               color: theme === "dark" ? "#999" : "#666",
             }}
           >
-            {bookContent.author}
+            {book?.author}
           </p>
         </div>
 
@@ -171,45 +229,53 @@ const Read = () => {
             overflowY: "auto",
           }}
         >
-          {bookContent.chapters.map((chapter) => (
+          {chapters.length === 0 ? (
             <div
-              key={chapter.id}
-              onClick={() => setCurrentPage(chapter.pages[0])}
               style={{
-                padding: "12px 20px",
-                fontSize: "14px",
-                borderBottom: `1px solid ${
-                  theme === "dark" ? "#333" : "#f5f5f5"
-                }`,
-                cursor: "pointer",
-                backgroundColor:
-                  currentPage >= chapter.pages[0] &&
-                  currentPage <= chapter.pages[1]
-                    ? theme === "dark"
-                      ? "#333"
-                      : "#f0f7ff"
-                    : "transparent",
-                color:
-                  currentPage >= chapter.pages[0] &&
-                  currentPage <= chapter.pages[1]
-                    ? theme === "dark"
-                      ? "#fff"
-                      : "#0078ff"
-                    : themeStyles.color,
+                padding: "20px",
+                textAlign: "center",
+                color: theme === "dark" ? "#999" : "#666",
               }}
             >
-              {chapter.title}
+              No chapters available
+            </div>
+          ) : (
+            chapters.map((chapter, idx) => (
               <div
+                key={chapter.id}
+                onClick={() => handleChapterSelect(idx)}
                 style={{
-                  fontSize: "12px",
-                  color: theme === "dark" ? "#777" : "#999",
-                  marginTop: "3px",
+                  padding: "12px 20px",
+                  fontSize: "14px",
+                  borderBottom: `1px solid ${
+                    theme === "dark" ? "#333" : "#f5f5f5"
+                  }`,
+                  cursor: "pointer",
+                  backgroundColor:
+                    idx === currentChapterIndex
+                      ? theme === "dark"
+                        ? "#333"
+                        : "#f0f7ff"
+                      : "transparent",
+                  color:
+                    idx === currentChapterIndex
+                      ? theme === "dark"
+                        ? "#fff"
+                        : "#0078ff"
+                      : theme === "dark" ? "#e0e0e0" : "#333",
+                  transition: "background-color 0.2s",
+                }}
+                onMouseOver={(e) => {
+                  (e.currentTarget).style.backgroundColor = theme === "dark" ? "#2a2a2a" : "#f5f5f5";
+                }}
+                onMouseOut={(e) => {
+                  (e.currentTarget).style.backgroundColor = idx === currentChapterIndex ? (theme === "dark" ? "#333" : "#f0f7ff") : "transparent";
                 }}
               >
-                Pages {chapter.pages[0]}-{chapter.pages[1]}
+                {chapter.title}
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
@@ -288,7 +354,7 @@ const Read = () => {
               fontWeight: "500",
             }}
           >
-            Page {currentPage} of {totalPages}
+            {currentChapter ? currentChapter.title : "Loading..."}
           </div>
 
           <button
@@ -510,7 +576,34 @@ const Read = () => {
               minHeight: "100%",
             }}
           >
-            <div dangerouslySetInnerHTML={{ __html: sampleText }} />
+            {loading ? (
+              <div style={{ textAlign: "center", color: themeStyles.color, padding: "40px 0" }}>
+                Loading book...
+              </div>
+            ) : error ? (
+              <div style={{ textAlign: "center", color: "#d32f2f", padding: "40px 0" }}>
+                {error}
+              </div>
+            ) : currentChapter ? (
+              <div>
+                <h1 style={{ margin: "0 0 20px 0", fontSize: `${fontSize + 8}px` }}>
+                  {currentChapter.title}
+                </h1>
+                {currentChapter.content ? (
+                  <div style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
+                    {currentChapter.content}
+                  </div>
+                ) : (
+                  <div style={{ color: themeStyles.color, opacity: 0.7 }}>
+                    No content available for this chapter.
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div style={{ textAlign: "center", color: themeStyles.color, padding: "40px 0" }}>
+                No chapters available
+              </div>
+            )}
           </div>
         </main>
 
@@ -527,15 +620,15 @@ const Read = () => {
           }}
         >
           <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage <= 1}
+            onClick={handlePreviousChapter}
+            disabled={currentChapterIndex <= 0}
             style={{
               backgroundColor: "transparent",
               border: "none",
               padding: "8px 16px",
               borderRadius: "4px",
-              cursor: currentPage <= 1 ? "default" : "pointer",
-              opacity: currentPage <= 1 ? 0.5 : 1,
+              cursor: currentChapterIndex <= 0 ? "default" : "pointer",
+              opacity: currentChapterIndex <= 0 ? 0.5 : 1,
               display: "flex",
               alignItems: "center",
               color: themeStyles.color,
@@ -563,53 +656,24 @@ const Read = () => {
             style={{
               display: "flex",
               alignItems: "center",
+              gap: "10px",
             }}
           >
-            <input
-              type="number"
-              min="1"
-              max={totalPages}
-              value={currentPage}
-              onChange={(e) =>
-                setCurrentPage(
-                  Math.min(
-                    Math.max(1, parseInt(e.target.value) || 1),
-                    totalPages
-                  )
-                )
-              }
-              style={{
-                width: "50px",
-                padding: "5px",
-                textAlign: "center",
-                border: `1px solid ${theme === "dark" ? "#444" : "#ddd"}`,
-                borderRadius: "4px",
-                backgroundColor: "transparent",
-                color: themeStyles.color,
-              }}
-            />
-            <span
-              style={{
-                margin: "0 10px",
-                color: theme === "dark" ? "#777" : "#777",
-              }}
-            >
-              of {totalPages}
+            <span style={{ fontSize: "14px" }}>
+              Chapter {currentChapterIndex + 1} of {chapters.length}
             </span>
           </div>
 
           <button
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
-            disabled={currentPage >= totalPages}
+            onClick={handleNextChapter}
+            disabled={currentChapterIndex >= chapters.length - 1}
             style={{
               backgroundColor: "transparent",
               border: "none",
               padding: "8px 16px",
               borderRadius: "4px",
-              cursor: currentPage >= totalPages ? "default" : "pointer",
-              opacity: currentPage >= totalPages ? 0.5 : 1,
+              cursor: currentChapterIndex >= chapters.length - 1 ? "default" : "pointer",
+              opacity: currentChapterIndex >= chapters.length - 1 ? 0.5 : 1,
               display: "flex",
               alignItems: "center",
               color: themeStyles.color,
