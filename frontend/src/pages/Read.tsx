@@ -439,35 +439,32 @@ const Read = () => {
             style={{
               background: "none",
               border: "none",
-              color: themeStyles.color,
+              color: theme === "light" ? "#666" : "#999",
               cursor: "pointer",
               padding: "5px",
               display: "flex",
               alignItems: "center",
+              transition: "color 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = theme === "light" ? "#333" : "#ccc";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = theme === "light" ? "#666" : "#999";
             }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <circle
-                cx="12"
-                cy="12"
-                r="1"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
-              <circle
-                cx="19"
-                cy="12"
-                r="1"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
-              <circle
-                cx="5"
-                cy="12"
-                r="1"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
+              <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2.5" />
+              <g stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M12 1v3" />
+                <path d="M16.97 5.03l2.12 2.12" />
+                <path d="M23 12h-3" />
+                <path d="M16.97 18.97l2.12 2.12" />
+                <path d="M12 23v-3" />
+                <path d="M7.03 18.97l-2.12 2.12" />
+                <path d="M1 12h3" />
+                <path d="M7.03 5.03l-2.12 2.12" />
+              </g>
             </svg>
           </button>
 
@@ -478,19 +475,20 @@ const Read = () => {
                 position: "absolute",
                 top: "50px",
                 right: "15px",
-                backgroundColor: theme === "dark" ? "#1a1a1a" : "#fff",
+                backgroundColor: theme === "dark" ? "#1a1a1a" : theme === "sepia" ? "#fbf7eb" : "#fff",
                 borderRadius: "8px",
                 boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
                 padding: "15px",
                 width: "220px",
                 zIndex: 10,
+                color: theme === "dark" ? "#e8e8e8" : "#333",
               }}
             >
               <div
                 style={{
                   marginBottom: "15px",
                   borderBottom: `1px solid ${
-                    theme === "dark" ? "#333" : "#eee"
+                    theme === "dark" ? "#333" : theme === "sepia" ? "#e8dcc8" : "#eee"
                   }`,
                   paddingBottom: "10px",
                 }}
@@ -516,7 +514,7 @@ const Read = () => {
                       setFontSize((prev) => Math.max(prev - 1, 12))
                     }
                     style={{
-                      backgroundColor: theme === "dark" ? "#333" : "#f5f5f5",
+                      backgroundColor: theme === "dark" ? "#333" : theme === "sepia" ? "#f0e8d8" : "#f5f5f5",
                       border: "none",
                       borderRadius: "4px",
                       width: "30px",
@@ -525,6 +523,7 @@ const Read = () => {
                       alignItems: "center",
                       justifyContent: "center",
                       cursor: "pointer",
+                      color: theme === "dark" ? "#fff" : "#333",
                     }}
                   >
                     <span style={{ fontSize: "18px" }}>-</span>
@@ -535,7 +534,7 @@ const Read = () => {
                       setFontSize((prev) => Math.min(prev + 1, 24))
                     }
                     style={{
-                      backgroundColor: theme === "dark" ? "#333" : "#f5f5f5",
+                      backgroundColor: theme === "dark" ? "#333" : theme === "sepia" ? "#f0e8d8" : "#f5f5f5",
                       border: "none",
                       borderRadius: "4px",
                       width: "30px",
@@ -544,6 +543,7 @@ const Read = () => {
                       alignItems: "center",
                       justifyContent: "center",
                       cursor: "pointer",
+                      color: theme === "dark" ? "#fff" : "#333",
                     }}
                   >
                     <span style={{ fontSize: "18px" }}>+</span>
@@ -575,7 +575,7 @@ const Read = () => {
                       border:
                         theme === "light"
                           ? "2px solid #0078ff"
-                          : "1px solid #ddd",
+                          : theme === "sepia" ? "1px solid #d4c4a0" : "1px solid #ddd",
                       borderRadius: "4px",
                       padding: "8px 0",
                       color: "#333",
@@ -593,7 +593,7 @@ const Read = () => {
                       border:
                         theme === "sepia"
                           ? "2px solid #0078ff"
-                          : "1px solid #ddd",
+                          : theme === "sepia" ? "1px solid #d4c4a0" : "1px solid #ddd",
                       borderRadius: "4px",
                       padding: "8px 0",
                       color: "#5f4b32",
@@ -611,7 +611,7 @@ const Read = () => {
                       border:
                         theme === "dark"
                           ? "2px solid #0078ff"
-                          : "1px solid #333",
+                          : theme === "sepia" ? "1px solid #d4c4a0" : "1px solid #ddd",
                       borderRadius: "4px",
                       padding: "8px 0",
                       color: "#fff",
