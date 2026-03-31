@@ -15,6 +15,7 @@ interface Book {
   id: string;
   title: string;
   author: string;
+  cover_image?: string;
 }
 
 const Read = () => {
@@ -66,6 +67,13 @@ const Read = () => {
     }
     
     return pages.length > 0 ? pages : [''];
+  };
+
+  // Calculate number of pages for a chapter content
+  const calculateChapterPages = (content?: string) => {
+    if (!content) return 0;
+    const pages = paginateContent(content);
+    return pages.length;
   };
 
   // Fetch book and chapters
@@ -280,13 +288,40 @@ const Read = () => {
           </h2>
           <p
             style={{
-              margin: "0",
+              margin: "0 0 15px 0",
               fontSize: "14px",
               color: theme === "dark" ? "#999" : "#666",
             }}
           >
             {book?.author}
           </p>
+
+          {/* Cover Image */}
+          {book?.cover_image && (
+            <div
+              style={{
+                width: "100%",
+                marginBottom: "15px",
+                display: "flex",
+                justifyContent: "center",
+                background: theme === "dark" ? "#2a2a2a" : "#f9f9f9",
+                borderRadius: "6px",
+                padding: "10px",
+              }}
+            >
+              <img
+                src={book.cover_image}
+                alt={book?.title}
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "240px",
+                  objectFit: "contain",
+                  borderRadius: "4px",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                }}
+              />
+            </div>
+          )}
         </div>
 
         <div
@@ -349,7 +384,17 @@ const Read = () => {
                   (e.currentTarget).style.backgroundColor = idx === currentChapterIndex ? (theme === "dark" ? "#333" : "#f0f7ff") : "transparent";
                 }}
               >
-                {chapter.title}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                  <div style={{ flex: 1 }}>{chapter.title}</div>
+                  <span style={{ fontSize: "12px", opacity: 0.7, marginLeft: "10px", whiteSpace: "nowrap" }}>
+                    {chapter.content 
+                      ? `${calculateChapterPages(chapter.content)}p`
+                      : chapter.end_page && chapter.start_page
+                        ? `${chapter.end_page - chapter.start_page + 1}p`
+                        : "~"
+                    }
+                  </span>
+                </div>
               </div>
             ))
           )}
