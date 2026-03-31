@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS chapters (
   title VARCHAR(255) NOT NULL,
   start_page INTEGER,
   end_page INTEGER,
+  content TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(book_id, chapter_number)

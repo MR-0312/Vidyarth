@@ -381,7 +381,47 @@ router.get('/:bookId/chapters', async (req, res) => {
     }
 
     const chapters = await ChapterQueries.getByBookId(bookId);
-    res.json(chapters);
+    // Return chapters without content for list view (lighter response)
+    const chaptersForList = chapters.map(ch => ({
+      id: ch.id,
+      book_id: ch.book_id,
+      chapter_number: ch.chapter_number,
+      title: ch.title,
+      start_page: ch.start_page,
+      end_page: ch.end_page,
+      created_at: ch.created_at
+    }));
+    res.json(chaptersForList);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ msg: 'Server Error' });
+  }
+});
+
+// @route   GET api/books/:bookId/chapters/:chapterId
+// @desc    Get specific chapter with content
+// @access  Public
+router.get('/:bookId/chapters/:chapterId', async (req, res) => {
+  try {
+    const { bookId, chapterId } = req.params;
+    
+    // Verify book exists
+    const book = await BookQueries.findById(bookId);
+    if (!book) {
+      return res.status(404).json({ msg: 'Book not found' });
+    }
+
+    const chapter = await ChapterQueries.getById(chapterId);
+    if (!chapter) {
+      return res.status(404).json({ msg: 'Chapter not found' });
+    }
+
+    // Verify chapter belongs to this book
+    if (chapter.book_id !== bookId) {
+      return res.status(403).json({ msg: 'Chapter does not belong to this book' });
+    }
+
+    res.json(chapter);
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ msg: 'Server Error' });
