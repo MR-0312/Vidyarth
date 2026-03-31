@@ -261,7 +261,7 @@ const Read = () => {
         style={{
           width: sidebarOpen ? "280px" : "0",
           transition: "width 0.3s ease",
-          backgroundColor: theme === "dark" ? "#1a1a1a" : "#fff",
+          backgroundColor: theme === "dark" ? "#1a1a1a" : theme === "sepia" ? "#f8f1e3" : "#fff",
           overflowY: "auto",
           boxShadow: sidebarOpen ? "0 0 10px rgba(0,0,0,0.1)" : "none",
           zIndex: 5,
@@ -274,7 +274,7 @@ const Read = () => {
         <div
           style={{
             padding: "20px",
-            borderBottom: `1px solid ${theme === "dark" ? "#444" : "#eee"}`,
+            borderBottom: `1px solid ${theme === "dark" ? "#444" : theme === "sepia" ? "#e8dcc8" : "#eee"}`,
           }}
         >
           <h2
@@ -327,7 +327,7 @@ const Read = () => {
         <div
           style={{
             padding: "15px 20px",
-            borderBottom: `1px solid ${theme === "dark" ? "#444" : "#eee"}`,
+            borderBottom: `1px solid ${theme === "dark" ? "#444" : theme === "sepia" ? "#e8dcc8" : "#eee"}`,
             fontSize: "15px",
             fontWeight: "600",
           }}
@@ -346,7 +346,7 @@ const Read = () => {
               style={{
                 padding: "20px",
                 textAlign: "center",
-                color: theme === "dark" ? "#999" : "#666",
+                color: theme === "dark" ? "#999" : theme === "sepia" ? "#8b7355" : "#666",
               }}
             >
               No chapters available
@@ -360,28 +360,28 @@ const Read = () => {
                   padding: "12px 20px",
                   fontSize: "14px",
                   borderBottom: `1px solid ${
-                    theme === "dark" ? "#333" : "#f5f5f5"
+                    theme === "dark" ? "#333" : theme === "sepia" ? "#e8dcc8" : "#f5f5f5"
                   }`,
                   cursor: "pointer",
                   backgroundColor:
                     idx === currentChapterIndex
                       ? theme === "dark"
                         ? "#333"
-                        : "#f0f7ff"
+                        : theme === "sepia" ? "#f0e8d8" : "#f0f7ff"
                       : "transparent",
                   color:
                     idx === currentChapterIndex
                       ? theme === "dark"
                         ? "#fff"
-                        : "#0078ff"
-                      : theme === "dark" ? "#e0e0e0" : "#333",
+                        : theme === "sepia" ? "#8b4513" : "#0078ff"
+                      : theme === "dark" ? "#e0e0e0" : theme === "sepia" ? "#5f4b32" : "#333",
                   transition: "background-color 0.2s",
                 }}
                 onMouseOver={(e) => {
-                  (e.currentTarget).style.backgroundColor = theme === "dark" ? "#2a2a2a" : "#f5f5f5";
+                  (e.currentTarget).style.backgroundColor = theme === "dark" ? "#2a2a2a" : theme === "sepia" ? "#f0e8d8" : "#f5f5f5";
                 }}
                 onMouseOut={(e) => {
-                  (e.currentTarget).style.backgroundColor = idx === currentChapterIndex ? (theme === "dark" ? "#333" : "#f0f7ff") : "transparent";
+                  (e.currentTarget).style.backgroundColor = idx === currentChapterIndex ? (theme === "dark" ? "#333" : theme === "sepia" ? "#f0e8d8" : "#f0f7ff") : "transparent";
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
@@ -417,8 +417,8 @@ const Read = () => {
             display: "flex",
             alignItems: "center",
             padding: "10px 15px",
-            backgroundColor: theme === "dark" ? "#1a1a1a" : "#fff",
-            borderBottom: `1px solid ${theme === "dark" ? "#333" : "#eee"}`,
+            backgroundColor: theme === "dark" ? "#1a1a1a" : theme === "sepia" ? "#f8f1e3" : "#fff",
+            borderBottom: `1px solid ${theme === "dark" ? "#333" : theme === "sepia" ? "#e8dcc8" : "#eee"}`,
             zIndex: 4,
           }}
         >
@@ -484,7 +484,7 @@ const Read = () => {
             style={{
               background: "none",
               border: "none",
-              color: theme === "light" ? "#666" : "#999",
+              color: theme === "light" ? "#666" : theme === "sepia" ? "#8b7355" : "#999",
               cursor: "pointer",
               padding: "5px",
               display: "flex",
@@ -492,10 +492,10 @@ const Read = () => {
               transition: "color 0.2s ease",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = theme === "light" ? "#333" : "#ccc";
+              e.currentTarget.style.color = theme === "light" ? "#333" : theme === "sepia" ? "#5f4b32" : "#ccc";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = theme === "light" ? "#666" : "#999";
+              e.currentTarget.style.color = theme === "light" ? "#666" : theme === "sepia" ? "#8b7355" : "#999";
             }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -526,7 +526,7 @@ const Read = () => {
                 padding: "15px",
                 width: "220px",
                 zIndex: 10,
-                color: theme === "dark" ? "#e8e8e8" : "#333",
+                color: theme === "dark" ? "#e8e8e8" : theme === "sepia" ? "#5f4b32" : "#333",
               }}
             >
               <div
@@ -691,7 +691,7 @@ const Read = () => {
               padding: "40px 60px",
               backgroundColor: themeStyles.paperBackground,
               boxShadow:
-                theme === "dark" ? "none" : "0 1px 3px rgba(0,0,0,0.1)",
+                theme === "dark" ? "none" : theme === "sepia" ? "0 1px 3px rgba(0,0,0,0.08)" : "0 1px 3px rgba(0,0,0,0.1)",
               borderRadius: "4px",
               lineHeight: "1.6",
               fontSize: `${fontSize}px`,
@@ -753,8 +753,8 @@ const Read = () => {
             alignItems: "center",
             justifyContent: "space-between",
             padding: "10px 20px",
-            backgroundColor: theme === "dark" ? "#1a1a1a" : "#fff",
-            borderTop: `1px solid ${theme === "dark" ? "#333" : "#eee"}`,
+            backgroundColor: theme === "dark" ? "#1a1a1a" : theme === "sepia" ? "#f8f1e3" : "#fff",
+            borderTop: `1px solid ${theme === "dark" ? "#333" : theme === "sepia" ? "#e8dcc8" : "#eee"}`,
             zIndex: 4,
           }}
         >
@@ -796,6 +796,7 @@ const Read = () => {
               display: "flex",
               alignItems: "center",
               gap: "10px",
+              color: themeStyles.color,
             }}
           >
             <span style={{ fontSize: "14px" }}>
