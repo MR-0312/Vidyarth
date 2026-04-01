@@ -24,6 +24,7 @@ const Read = () => {
   
   const [fontSize, setFontSize] = useState(16);
   const [theme, setTheme] = useState("light"); // light, dark, sepia
+  const [fontFamily, setFontFamily] = useState("system-sans"); // Font family selection
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   
@@ -269,6 +270,17 @@ const Read = () => {
     }
   };
 
+  const getFontFamilyStyles = () => {
+    const fontFamilies: { [key: string]: string } = {
+      "system-sans": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
+      "georgia": "'Georgia', 'Garamond', serif",
+      "times": "'Times New Roman', 'Times', serif",
+      "arial": "'Arial', 'Helvetica', sans-serif",
+      "courier": "'Courier New', 'Courier', monospace",
+    };
+    return fontFamilies[fontFamily] || fontFamilies["system-sans"];
+  };
+
   const themeStyles = getThemeStyles();
 
   return (
@@ -279,8 +291,7 @@ const Read = () => {
         width: "100%",
         backgroundColor: themeStyles.background,
         color: themeStyles.color,
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
+        fontFamily: getFontFamilyStyles(),
         overflow: "hidden",
         margin: 0,
         padding: 0,
@@ -735,6 +746,47 @@ const Read = () => {
                   </button>
                 </div>
               </div>
+
+              <div
+                style={{
+                  marginTop: "15px",
+                  borderTop: `1px solid ${
+                    theme === "dark" ? "#333" : theme === "sepia" ? "#e8dcc8" : "#eee"
+                  }`,
+                  paddingTop: "10px",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Font
+                </div>
+                <select
+                  value={fontFamily}
+                  onChange={(e) => setFontFamily(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: `1px solid ${theme === "dark" ? "#444" : theme === "sepia" ? "#d4c4a0" : "#ddd"}`,
+                    backgroundColor: theme === "dark" ? "#333" : theme === "sepia" ? "#f0e8d8" : "#f9f9f9",
+                    color: theme === "dark" ? "#fff" : theme === "sepia" ? "#5f4b32" : "#333",
+                    fontSize: "12px",
+                    fontFamily: "inherit",
+                    cursor: "pointer",
+                  }}
+                >
+                  <option value="system-sans">System Sans</option>
+                  <option value="georgia">Georgia (Serif)</option>
+                  <option value="times">Times (Classic)</option>
+                  <option value="arial">Arial (Clean)</option>
+                  <option value="courier">Courier (Mono)</option>
+                </select>
+              </div>
             </div>
           )}
         </header>
@@ -762,6 +814,7 @@ const Read = () => {
               borderRadius: "4px",
               lineHeight: "1.6",
               fontSize: `${fontSize}px`,
+              fontFamily: getFontFamilyStyles(),
               margin: "0 20px",
               height: "100%",
               overflow: "hidden",
