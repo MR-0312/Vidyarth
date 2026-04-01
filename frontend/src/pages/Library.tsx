@@ -302,7 +302,7 @@ const Library = () => {
             style={{
               background: "none",
               border: "none",
-              color: viewMode === "grid" ? "#0078ff" : "var(--text-muted)",
+              color: viewMode === "grid" ? "#0db8a6" : "var(--text-muted)",
               padding: "5px",
               display: "flex",
               alignItems: "center",
@@ -318,7 +318,7 @@ const Library = () => {
             style={{
               background: "none",
               border: "none",
-              color: viewMode === "list" ? "#0078ff" : "var(--text-muted)",
+              color: viewMode === "list" ? "#0db8a6" : "var(--text-muted)",
               padding: "5px",
               display: "flex",
               alignItems: "center",
@@ -487,7 +487,7 @@ const CategoryTags = ({ categories, maxDisplay = 2 }: { categories?: string[]; m
               fontSize: "11px",
               color: "white",
               padding: "3px 8px",
-              backgroundColor: "#0078ff",
+              backgroundColor: "#0db8a6",
               borderRadius: "12px",
               whiteSpace: "nowrap",
             }}
@@ -547,7 +547,7 @@ const CategoryTags = ({ categories, maxDisplay = 2 }: { categories?: string[]; m
                   fontSize: "11px",
                   color: "white",
                   padding: "4px 10px",
-                  backgroundColor: "#0078ff",
+                  backgroundColor: "#0db8a6",
                   borderRadius: "12px",
                   whiteSpace: "nowrap",
                 }}
@@ -753,7 +753,7 @@ const BookCard = ({ book, viewMode, navigate }: BookCardProps) => {
               style={{
                 height: "100%",
                 width: `${book.progress}%`,
-                backgroundColor: "#0078ff",
+                backgroundColor: "#0db8a6",
               }}
             ></div>
           </div>

@@ -118,7 +118,7 @@ const Login = () => {
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#0078ff",
+          backgroundColor: "#0db8a6",
           padding: "40px",
           position: "relative",
           overflow: "hidden",
@@ -167,6 +167,7 @@ const Login = () => {
               maxWidth: "450px",
               lineHeight: 1.6,
               marginBottom: "30px",
+              color: "white",
             }}
           >
             A modern, elegant e-book reader designed for the best reading
@@ -205,7 +206,7 @@ const Login = () => {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span style={{ textAlign: "left", fontSize: "16px" }}>
+              <span style={{ textAlign: "left", fontSize: "16px", color: "white" }}>
                 Support for multiple formats
               </span>
             </div>
@@ -226,7 +227,7 @@ const Login = () => {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span style={{ textAlign: "left", fontSize: "16px" }}>
+              <span style={{ textAlign: "left", fontSize: "16px", color: "white" }}>
                 Notes and highlights
               </span>
             </div>
@@ -263,7 +264,7 @@ const Login = () => {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span style={{ textAlign: "left", fontSize: "16px" }}>
+              <span style={{ textAlign: "left", fontSize: "16px", color: "white" }}>
                 Cross-platform sync
               </span>
             </div>
@@ -369,7 +370,7 @@ const Login = () => {
                 <Link
                   to="/forgot-password"
                   style={{
-                    color: "#0078ff",
+                    color: "#0db8a6",
                     fontSize: "14px",
                     textDecoration: "none",
                   }}
@@ -403,7 +404,7 @@ const Login = () => {
               style={{
                 width: "100%",
                 padding: "14px",
-                backgroundColor: "#0078ff",
+                backgroundColor: "#0db8a6",
                 color: "white",
                 border: "none",
                 borderRadius: "8px",
@@ -452,7 +453,7 @@ const Login = () => {
               <Link
                 to="/signup"
                 style={{
-                  color: "#0078ff",
+                  color: "#0db8a6",
                   textDecoration: "none",
                   fontWeight: "500",
                 }}

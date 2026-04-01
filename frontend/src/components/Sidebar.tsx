@@ -26,7 +26,7 @@ const Sidebar = ({ isOpen, items, activeItem, onItemClick }: SidebarProps) => {
   const sidebarStyles: React.CSSProperties = {
     width: isOpen ? "240px" : "0",
     transition: "width 0.3s ease",
-    backgroundColor: "#0078ff",
+    backgroundColor: "#0db8a6",
     overflowY: "auto",
     display: "flex",
     flexDirection: "column",

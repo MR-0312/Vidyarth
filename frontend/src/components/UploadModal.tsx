@@ -230,7 +230,7 @@ const UploadModal = ({ isOpen, onClose, onSuccess }: UploadModalProps) => {
   const textColor = isDark ? "#ffffff" : "#000000";
   const inputBg = isDark ? "#2a2a2a" : "#f5f5f5";
   const inputBorder = isDark ? "#404040" : "#d0d0d0";
-  const accentColor = "#0078ff";
+  const accentColor = "#0db8a6";
 
   const modalOverlayStyles: React.CSSProperties = {
     position: "fixed",

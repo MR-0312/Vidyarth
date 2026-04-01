@@ -43,7 +43,7 @@ const CategoryTags = ({ categories, maxDisplay = 2 }: { categories?: string[]; m
               fontSize: "11px",
               color: "white",
               padding: "3px 8px",
-              backgroundColor: "#0078ff",
+              backgroundColor: "#0db8a6",
               borderRadius: "12px",
               whiteSpace: "nowrap",
             }}
@@ -103,7 +103,7 @@ const CategoryTags = ({ categories, maxDisplay = 2 }: { categories?: string[]; m
                   fontSize: "11px",
                   color: "white",
                   padding: "4px 10px",
-                  backgroundColor: "#0078ff",
+                  backgroundColor: "#0db8a6",
                   borderRadius: "12px",
                   whiteSpace: "nowrap",
                 }}
@@ -217,7 +217,7 @@ const Home = () => {
                 style={{
                   color: "white",
                   textDecoration: "none",
-                  backgroundColor: "#0078ff",
+                  backgroundColor: "#0db8a6",
                   padding: "10px 20px",
                   borderRadius: "20px",
                   fontSize: "16px",
@@ -276,14 +276,14 @@ const Home = () => {
           <Link
             to="/signup"
             style={{
-              backgroundColor: "#0078ff",
+              backgroundColor: "#0db8a6",
               color: "white",
               padding: "16px 32px",
               borderRadius: "30px",
               textDecoration: "none",
               fontSize: "18px",
               fontWeight: "500",
-              boxShadow: "0 10px 20px rgba(0, 120, 255, 0.3)",
+              boxShadow: "0 10px 20px rgba(13, 184, 166, 0.3)",
             }}
           >
             Create Free Account
@@ -321,7 +321,7 @@ const Home = () => {
               left: "-30px",
               width: "calc(100% + 60px)",
               height: "calc(100% + 60px)",
-              background: "rgba(0, 120, 255, 0.1)",
+              background: "rgba(13, 184, 166, 0.1)",
               filter: "blur(40px)",
               borderRadius: "20px",
               zIndex: 0,
@@ -381,7 +381,7 @@ const Home = () => {
           >
             <div
               style={{
-                backgroundColor: "rgba(0, 120, 255, 0.1)",
+                backgroundColor: "rgba(13, 184, 166, 0.1)",
                 width: "80px",
                 height: "80px",
                 borderRadius: "50%",
@@ -394,14 +394,14 @@ const Home = () => {
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M4 19.5A2.5 2.5 0 016.5 17H20"
-                  stroke="#0078ff"
+                  stroke="#0db8a6"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
                 <path
                   d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"
-                  stroke="#0078ff"
+                  stroke="#0db8a6"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -428,7 +428,7 @@ const Home = () => {
           >
             <div
               style={{
-                backgroundColor: "rgba(0, 120, 255, 0.1)",
+                backgroundColor: "rgba(13, 184, 166, 0.1)",
                 width: "80px",
                 height: "80px",
                 borderRadius: "50%",
@@ -441,7 +441,7 @@ const Home = () => {
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2v16z"
-                  stroke="#0078ff"
+                  stroke="#0db8a6"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -468,7 +468,7 @@ const Home = () => {
           >
             <div
               style={{
-                backgroundColor: "rgba(0, 120, 255, 0.1)",
+                backgroundColor: "rgba(13, 184, 166, 0.1)",
                 width: "80px",
                 height: "80px",
                 borderRadius: "50%",
@@ -483,21 +483,21 @@ const Home = () => {
                   cx="12"
                   cy="12"
                   r="10"
-                  stroke="#0078ff"
+                  stroke="#0db8a6"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
                 <path
                   d="M2 12h20"
-                  stroke="#0078ff"
+                  stroke="#0db8a6"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
                 <path
                   d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"
-                  stroke="#0078ff"
+                  stroke="#0db8a6"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -524,7 +524,7 @@ const Home = () => {
           >
             <div
               style={{
-                backgroundColor: "rgba(0, 120, 255, 0.1)",
+                backgroundColor: "rgba(13, 184, 166, 0.1)",
                 width: "80px",
                 height: "80px",
                 borderRadius: "50%",
@@ -537,7 +537,7 @@ const Home = () => {
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"
-                  stroke="#0078ff"
+                  stroke="#0db8a6"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -564,7 +564,7 @@ const Home = () => {
           >
             <div
               style={{
-                backgroundColor: "rgba(0, 120, 255, 0.1)",
+                backgroundColor: "rgba(13, 184, 166, 0.1)",
                 width: "80px",
                 height: "80px",
                 borderRadius: "50%",
@@ -577,14 +577,14 @@ const Home = () => {
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M23 12c0 6.075-4.925 11-11 11S1 18.075 1 12 5.925 1 12 1s11 4.925 11 11z"
-                  stroke="#0078ff"
+                  stroke="#0db8a6"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
                 <path
                   d="M16 12l-4-4-4 4m8 4l-4-4-4 4"
-                  stroke="#0078ff"
+                  stroke="#0db8a6"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -611,7 +611,7 @@ const Home = () => {
           >
             <div
               style={{
-                backgroundColor: "rgba(0, 120, 255, 0.1)",
+                backgroundColor: "rgba(13, 184, 166, 0.1)",
                 width: "80px",
                 height: "80px",
                 borderRadius: "50%",
@@ -624,7 +624,7 @@ const Home = () => {
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4"
-                  stroke="#0078ff"
+                  stroke="#0db8a6"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -634,7 +634,7 @@ const Home = () => {
                   y1="2"
                   x2="8"
                   y2="18"
-                  stroke="#0078ff"
+                  stroke="#0db8a6"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -644,7 +644,7 @@ const Home = () => {
                   y1="6"
                   x2="16"
                   y2="22"
-                  stroke="#0078ff"
+                  stroke="#0db8a6"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -700,14 +700,14 @@ const Home = () => {
         <Link
           to="/signup"
           style={{
-            backgroundColor: "#0078ff",
+            backgroundColor: "#0db8a6",
             color: "white",
             padding: "16px 32px",
             borderRadius: "30px",
             textDecoration: "none",
             fontSize: "18px",
             fontWeight: "500",
-            boxShadow: "0 10px 20px rgba(0, 120, 255, 0.3)",
+            boxShadow: "0 10px 20px rgba(13, 184, 166, 0.3)",
           }}
         >
           Create Free Account
@@ -757,7 +757,7 @@ const Home = () => {
               experience better than ever.
             </p>
             <div style={{ display: "flex", gap: "15px" }}>
-              <a href="#" style={{ color: "#0078ff" }}>
+              <a href="#" style={{ color: "#0db8a6" }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                   <path
                     d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"
@@ -768,7 +768,7 @@ const Home = () => {
                   />
                 </svg>
               </a>
-              <a href="#" style={{ color: "#0078ff" }}>
+              <a href="#" style={{ color: "#0db8a6" }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                   <path
                     d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"
@@ -779,7 +779,7 @@ const Home = () => {
                   />
                 </svg>
               </a>
-              <a href="#" style={{ color: "#0078ff" }}>
+              <a href="#" style={{ color: "#0db8a6" }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                   <rect
                     x="2"

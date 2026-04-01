@@ -1,26 +1,28 @@
 /* ===== CSS Custom Properties (Theme Variables) ===== */
 :root,
 html[data-theme="light"] {
-  --bg-primary: #f4f6f8;
-  --bg-secondary: #e8ecef;
+  --bg-primary: #e0f7ff;
+  --bg-secondary: #c0ecff;
   --bg-elevated: #ffffff;
-  --bg-header: rgba(244, 246, 248, 0.92);
+  --bg-header: rgba(224, 247, 255, 0.95);
   --bg-card: #ffffff;
-  --bg-image: #dde2e7;
-  --text-primary: #1a202c;
-  --text-secondary: #4a5568;
-  --text-muted: #718096;
-  --text-book-title: #1a202c;
-  --border-color: rgba(0, 0, 0, 0.08);
-  --border-solid: #d1d5db;
-  --search-bg: #dde2e7;
-  --input-bg: #e8ecef;
-  --import-btn-bg: #dde2e7;
-  --social-btn-bg: #e8ecef;
-  --divider-color: #d1d5db;
-  --hero-gradient: radial-gradient(circle at 50% 50%, #dde2e7 0%, #f4f6f8 70%);
-  --toggle-track: #d1d5db;
-  --toggle-thumb: #718096;
+  --bg-image: #a8e0ff;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-book-title: #0f172a;
+  --border-color: rgba(13, 184, 166, 0.15);
+  --border-solid: #90d9ce;
+  --search-bg: #d0f0ff;
+  --input-bg: #e0f7ff;
+  --import-btn-bg: #d0f0ff;
+  --social-btn-bg: #e0f7ff;
+  --divider-color: #90d9ce;
+  --hero-gradient: radial-gradient(circle at 50% 50%, #b0e5ff 0%, #e0f7ff 70%);
+  --primary-accent: #0db8a6;
+  --primary-accent-hover: #0a9a8a;
+  --toggle-track: #90d9ce;
+  --toggle-thumb: #0db8a6;
   color-scheme: light;
 }
 

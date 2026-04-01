@@ -9,7 +9,7 @@
 }
 
 nav {
-  background: #007bff;
+  background: #0db8a6;
   padding: 1rem;
   color: white;
   text-align: center;
@@ -18,7 +18,7 @@ nav {
 
 button {
   padding: 10px 20px;
-  background: #007bff;
+  background: #0db8a6;
   color: white;
   border: none;
   border-radius: 5px;
@@ -26,7 +26,7 @@ button {
   transition: background 0.3s;
 }
 button:hover {
-  background: #0056b3;
+  background: #0a9a8a;
 }
 
 .card {

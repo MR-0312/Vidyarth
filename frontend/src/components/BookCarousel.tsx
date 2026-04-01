@@ -111,7 +111,7 @@ const BookCarousel = () => {
                     fontSize: "12px",
                     color: "white",
                     padding: "4px 10px",
-                    backgroundColor: "#0078ff",
+                    backgroundColor: "#0db8a6",
                     borderRadius: "12px",
                   }}
                 >
@@ -169,7 +169,7 @@ const BookCarousel = () => {
                           fontSize: "11px",
                           color: "white",
                           padding: "4px 10px",
-                          backgroundColor: "#0078ff",
+                          backgroundColor: "#0db8a6",
                           borderRadius: "12px",
                           whiteSpace: "nowrap",
                         }}
