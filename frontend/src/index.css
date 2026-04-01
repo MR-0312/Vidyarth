@@ -1,29 +1,5 @@
 /* ===== CSS Custom Properties (Theme Variables) ===== */
 :root,
-html[data-theme="dark"] {
-  --bg-primary: #2a2e30;
-  --bg-secondary: #222628;
-  --bg-elevated: #3a3f41;
-  --bg-header: rgba(42, 46, 48, 0.9);
-  --bg-card: #222628;
-  --bg-image: #1a1d1e;
-  --text-primary: #ffffff;
-  --text-secondary: #d1d5db;
-  --text-muted: #a8a9aa;
-  --text-book-title: #f8f9fa;
-  --border-color: rgba(255, 255, 255, 0.1);
-  --border-solid: #3a3f41;
-  --search-bg: #3a3f41;
-  --input-bg: #3a3f41;
-  --import-btn-bg: #4a4f51;
-  --social-btn-bg: #3a3f41;
-  --divider-color: #3a3f41;
-  --hero-gradient: radial-gradient(circle at 50% 50%, #3a3f41 0%, #2a2e30 70%);
-  --toggle-track: #3a3f41;
-  --toggle-thumb: #a8a9aa;
-  color-scheme: dark;
-}
-
 html[data-theme="light"] {
   --bg-primary: #f4f6f8;
   --bg-secondary: #e8ecef;
@@ -46,6 +22,30 @@ html[data-theme="light"] {
   --toggle-track: #d1d5db;
   --toggle-thumb: #718096;
   color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  --bg-primary: #2a2e30;
+  --bg-secondary: #222628;
+  --bg-elevated: #3a3f41;
+  --bg-header: rgba(42, 46, 48, 0.9);
+  --bg-card: #222628;
+  --bg-image: #1a1d1e;
+  --text-primary: #ffffff;
+  --text-secondary: #d1d5db;
+  --text-muted: #a8a9aa;
+  --text-book-title: #f8f9fa;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-solid: #3a3f41;
+  --search-bg: #3a3f41;
+  --input-bg: #3a3f41;
+  --import-btn-bg: #4a4f51;
+  --social-btn-bg: #3a3f41;
+  --divider-color: #3a3f41;
+  --hero-gradient: radial-gradient(circle at 50% 50%, #3a3f41 0%, #2a2e30 70%);
+  --toggle-track: #3a3f41;
+  --toggle-thumb: #a8a9aa;
+  color-scheme: dark;
 }
 
 /* Reset and base styles */
