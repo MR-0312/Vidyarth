@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
 import Sidebar from "../components/Sidebar";
 import UploadModal from "../components/UploadModal";
 import { useBooks } from "../hooks/useBooks";
@@ -17,8 +16,6 @@ import {
   SettingsIcon,
   GridIcon,
   ListIcon,
-  LightIcon,
-  DarkIcon,
   UploadIcon,
 } from "../utils/icons";
 
@@ -45,7 +42,6 @@ const sidebarItemsWithIcons = SIDEBAR_ITEMS.map((item) => ({
 const Library = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeNavItem, setActiveNavItem] = useState("books");
@@ -285,31 +281,6 @@ const Library = () => {
               title="Settings"
             >
               <SettingsIcon />
-            </button>
-
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              title={
-                theme === "dark"
-                  ? "Switch to Light Mode"
-                  : "Switch to Dark Mode"
-              }
-              style={{
-                background: "none",
-                border: "1px solid var(--border-solid)",
-                borderRadius: "20px",
-                padding: "5px 10px",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                color: "var(--text-primary)",
-                fontSize: "13px",
-              }}
-            >
-              {theme === "dark" ? <LightIcon /> : <DarkIcon />}
-              {theme === "dark" ? "Light" : "Dark"}
             </button>
           </div>
         </header>

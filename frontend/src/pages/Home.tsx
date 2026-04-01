@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
 import { useBooks } from "../hooks/useBooks";
 
 // Categories with icons
@@ -121,7 +120,6 @@ const CategoryTags = ({ categories, maxDisplay = 2 }: { categories?: string[]; m
 
 const Home = () => {
   const { user, isAuthenticated } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   
   // Fetch featured books dynamically
@@ -230,36 +228,6 @@ const Home = () => {
             </li>
           </ul>
         </nav>
-
-        {/* Theme Toggle */}
-        <button
-          onClick={toggleTheme}
-          title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          style={{
-            background: "none",
-            border: "1px solid var(--border-color)",
-            borderRadius: "20px",
-            padding: "6px 12px",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            color: "var(--text-primary)",
-            fontSize: "14px",
-          }}
-        >
-          {theme === "dark" ? (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          )}
-          {theme === "dark" ? "Light" : "Dark"}
-        </button>
       </header>
 
       {/* Hero Section */}
@@ -694,152 +662,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Featured Books Section */}
-      <section
-        style={{
-          padding: "100px 50px",
-          backgroundColor: "var(--bg-secondary)",
-        }}
-      >
-        <h2
-          style={{
-            fontSize: "36px",
-            fontWeight: "600",
-            textAlign: "center",
-            marginBottom: "60px",
-          }}
-        >
-          Featured Books
-        </h2>
-
-        {booksLoading ? (
-          <div style={{ textAlign: "center", color: "var(--text-secondary)" }}>
-            <p>Loading featured books...</p>
-          </div>
-        ) : featuredBooks.length === 0 ? (
-          <div style={{ textAlign: "center", color: "var(--text-secondary)" }}>
-            <p>No books available yet.</p>
-          </div>
-        ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-              gap: "40px",
-              maxWidth: "1200px",
-              margin: "0 auto",
-            }}
-          >
-            {featuredBooks.map((book) => (
-              <div
-                key={book.id}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  borderRadius: "12px",
-                  overflow: "hidden",
-                  backgroundColor: "var(--bg-card)",
-                  transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                  cursor: "pointer",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                }}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLDivElement;
-                  el.style.transform = "translateY(-8px)";
-                  el.style.boxShadow = "0 12px 24px rgba(0,0,0,0.15)";
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLDivElement;
-                  el.style.transform = "translateY(0)";
-                  el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
-                }}
-              >
-                <div
-                  style={{
-                    position: "relative",
-                    paddingBottom: "140%",
-                    backgroundColor: "var(--bg-image)",
-                    overflow: "hidden",
-                  }}
-                >
-                  <img
-                    src={book.image}
-                    alt={book.title}
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                </div>
-                <div
-                  style={{
-                    padding: "20px",
-                    display: "flex",
-                    flexDirection: "column",
-                    flex: 1,
-                  }}
-                >
-                  <h3
-                    style={{
-                      margin: "0 0 8px 0",
-                      fontSize: "18px",
-                      fontWeight: "600",
-                      color: "var(--text-primary)",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                    }}
-                  >
-                    {book.title}
-                  </h3>
-                  <p
-                    style={{
-                      margin: "0 0 8px 0",
-                      fontSize: "14px",
-                      color: "var(--text-secondary)",
-                      fontWeight: "500",
-                    }}
-                  >
-                    {book.author}
-                  </p>
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "10px",
-                      alignItems: "center",
-                      flexWrap: "wrap",
-                      marginTop: "auto",
-                    }}
-                  >
-                    {book.categories && book.categories.length > 0 && (
-                      <CategoryTags categories={book.categories} maxDisplay={2} />
-                    )}
-                    {book.rating && book.rating > 0 && (
-                      <span
-                        style={{
-                          fontSize: "14px",
-                          color: "var(--text-primary)",
-                          fontWeight: "500",
-                          marginLeft: book.categories?.length ? "auto" : 0,
-                        }}
-                      >
-                        ⭐ {book.rating.toFixed(1)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
+      
       {/* CTA Section */}
       <section
         style={{
