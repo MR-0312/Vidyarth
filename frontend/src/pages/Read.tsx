@@ -405,7 +405,7 @@ const Read = () => {
                     idx === currentChapterIndex
                       ? theme === "dark"
                         ? "#fff"
-                        : theme === "sepia" ? "#8b4513" : "#0078ff"
+                        : theme === "sepia" ? "#8b4513" : "#0db8a6"
                       : theme === "dark" ? "#e0e0e0" : theme === "sepia" ? "#5f4b32" : "#333",
                   transition: "background-color 0.2s",
                 }}
@@ -686,7 +686,7 @@ const Read = () => {
                       backgroundColor: "#fff",
                       border:
                         theme === "light"
-                          ? "2px solid #0078ff"
+                          ? "2px solid #0db8a6"
                           : theme === "sepia" ? "1px solid #d4c4a0" : "1px solid #ddd",
                       borderRadius: "4px",
                       padding: "8px 0",
@@ -704,7 +704,7 @@ const Read = () => {
                       backgroundColor: "#fbf7eb",
                       border:
                         theme === "sepia"
-                          ? "2px solid #0078ff"
+                          ? "2px solid #0db8a6"
                           : theme === "sepia" ? "1px solid #d4c4a0" : "1px solid #ddd",
                       borderRadius: "4px",
                       padding: "8px 0",
@@ -722,7 +722,7 @@ const Read = () => {
                       backgroundColor: "#333",
                       border:
                         theme === "dark"
-                          ? "2px solid #0078ff"
+                          ? "2px solid #0db8a6"
                           : theme === "sepia" ? "1px solid #d4c4a0" : "1px solid #ddd",
                       borderRadius: "4px",
                       padding: "8px 0",

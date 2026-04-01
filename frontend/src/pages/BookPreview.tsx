@@ -552,7 +552,7 @@ const BookPreview = () => {
                       style={{
                         fontSize: "12px",
                         color: "white",
-                        backgroundColor: "#0078ff",
+                        backgroundColor: "#0db8a6",
                         padding: "6px 12px",
                         borderRadius: "16px",
                         fontWeight: "500",
@@ -577,7 +577,7 @@ const BookPreview = () => {
               <button
                 onClick={handleReadNow}
                 style={{
-                  backgroundColor: "#0078ff",
+                  backgroundColor: "#0db8a6",
                   color: "white",
                   border: "none",
                   padding: "12px 32px",
@@ -593,7 +593,7 @@ const BookPreview = () => {
                 }}
                 onMouseOut={(e) => {
                   (e.target as HTMLButtonElement).style.backgroundColor =
-                    "#0078ff";
+                    "#0db8a6";
                 }}
               >
                 📖 READ NOW
@@ -751,7 +751,7 @@ const BookPreview = () => {
                         alignItems: "center",
                       }}
                       onMouseOver={(e) => {
-                        (e.currentTarget).style.backgroundColor = "#0078ff";
+                        (e.currentTarget).style.backgroundColor = "#0db8a6";
                         (e.currentTarget).style.color = "white";
                       }}
                       onMouseOut={(e) => {
@@ -901,7 +901,7 @@ const BookPreview = () => {
                 onClick={handleSubmitReview}
                 disabled={submittingReview || userRating === 0 || !comment.trim()}
                 style={{
-                  backgroundColor: submittingReview || userRating === 0 || !comment.trim() ? "#ccc" : "#0078ff",
+                  backgroundColor: submittingReview || userRating === 0 || !comment.trim() ? "#ccc" : "#0db8a6",
                   color: "white",
                   border: "none",
                   padding: "12px 32px",
@@ -918,7 +918,7 @@ const BookPreview = () => {
                 }}
                 onMouseOut={(e) => {
                   if (!submittingReview && userRating > 0 && comment.trim()) {
-                    (e.target as HTMLButtonElement).style.backgroundColor = "#0078ff";
+                    (e.target as HTMLButtonElement).style.backgroundColor = "#0db8a6";
                   }
                 }}
               >
@@ -1037,7 +1037,7 @@ const BookPreview = () => {
             onClick={handleReport}
             style={{
               backgroundColor: "transparent",
-              color: "#0078ff",
+              color: "#0db8a6",
               border: "none",
               cursor: "pointer",
               fontSize: "14px",
@@ -1169,14 +1169,14 @@ const BookPreview = () => {
                       disabled={submittingReport}
                       style={{
                         backgroundColor: reportIssues.includes(issue.id)
-                          ? "#0078ff"
+                          ? "#0db8a6"
                           : "var(--bg-elevated)",
                         color: reportIssues.includes(issue.id)
                           ? "white"
                           : "var(--text-primary)",
                         border: `2px solid ${
                           reportIssues.includes(issue.id)
-                            ? "#0078ff"
+                            ? "#0db8a6"
                             : "var(--border-color)"
                         }`,
                         padding: "12px 16px",
@@ -1263,7 +1263,7 @@ const BookPreview = () => {
                     backgroundColor:
                       submittingReport || reportIssues.length === 0
                         ? "#ccc"
-                        : "#0078ff",
+                        : "#0db8a6",
                     color: "white",
                     border: "none",
                     padding: "10px 24px",
@@ -1291,7 +1291,7 @@ const BookPreview = () => {
                       reportIssues.length > 0
                     ) {
                       (e.target as HTMLButtonElement).style.backgroundColor =
-                        "#0078ff";
+                        "#0db8a6";
                     }
                   }}
                 >
