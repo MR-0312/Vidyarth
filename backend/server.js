@@ -51,6 +51,7 @@ function startServer() {
   app.use("/api/reviews", require("./routes/reviews"));
   app.use("/api/analytics", require("./routes/analytics"));
   app.use("/api/contributions", require("./routes/contributions"));
+  app.use("/api", require("./routes/translation"));
 
   // Health check endpoint
   app.get('/health', (req, res) => {

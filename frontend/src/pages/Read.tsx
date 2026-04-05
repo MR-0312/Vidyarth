@@ -27,6 +27,8 @@ const Read = () => {
   const [fontFamily, setFontFamily] = useState("system-sans"); // Font family selection
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState("en"); // Language selection
+  const [isTranslating, setIsTranslating] = useState(false);
   
   // Book and chapter state
   const [book, setBook] = useState<Book | null>(null);
@@ -76,6 +78,37 @@ const Read = () => {
     if (!content) return 0;
     const pages = paginateContent(content);
     return pages.length;
+  };
+
+  // Translation function using backend API
+  const translateChapterContent = async (content: string, targetLanguage: string): Promise<string> => {
+    if (targetLanguage === "en" || !content) return content;
+    
+    try {
+      setIsTranslating(true);
+      const response = await fetch("http://localhost:8080/api/translate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: content,
+          targetLanguage,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Translation API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.translatedText || content;
+    } catch (err) {
+      console.error("Translation error:", err);
+      return content; // Return original text if translation fails
+    } finally {
+      setIsTranslating(false);
+    }
   };
 
   // Fetch book and chapters
@@ -157,7 +190,14 @@ const Read = () => {
         const chapter = chapters[currentChapterIndex];
         const response = await fetch(`http://localhost:8080/api/books/${bookId}/chapters/${chapter.id}`);
         if (response.ok) {
-          const chapterData = await response.json();
+          let chapterData = await response.json();
+          
+          // Apply translation if a non-English language is selected
+          if (selectedLanguage !== "en" && chapterData.content) {
+            const translatedContent = await translateChapterContent(chapterData.content, selectedLanguage);
+            chapterData.content = translatedContent;
+          }
+          
           setCurrentChapter(chapterData);
           
           // Paginate the content
@@ -178,7 +218,7 @@ const Read = () => {
     };
 
     loadChapterContent();
-  }, [bookId, chapters, currentChapterIndex]);
+  }, [bookId, chapters, currentChapterIndex, selectedLanguage]);
 
   // Update page content when current page changes
   useEffect(() => {
@@ -787,8 +827,64 @@ const Read = () => {
                   <option value="courier">Courier (Mono)</option>
                 </select>
               </div>
+
+              <div
+                style={{
+                  marginTop: "15px",
+                  borderTop: `1px solid ${
+                    theme === "dark" ? "#333" : theme === "sepia" ? "#e8dcc8" : "#eee"
+                  }`,
+                  paddingTop: "10px",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Translate
+                </div>
+                <select
+                  value={selectedLanguage}
+                  onChange={(e) => setSelectedLanguage(e.target.value)}
+                  disabled={isTranslating}
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: `1px solid ${theme === "dark" ? "#444" : theme === "sepia" ? "#d4c4a0" : "#ddd"}`,
+                    backgroundColor: theme === "dark" ? "#333" : theme === "sepia" ? "#f0e8d8" : "#f9f9f9",
+                    color: theme === "dark" ? "#fff" : theme === "sepia" ? "#5f4b32" : "#333",
+                    fontSize: "12px",
+                    fontFamily: "inherit",
+                    cursor: isTranslating ? "not-allowed" : "pointer",
+                    opacity: isTranslating ? 0.6 : 1,
+                  }}
+                >
+                  <option value="en">English (Original)</option>
+                  <option value="es">Spanish</option>
+                  <option value="fr">French</option>
+                  <option value="de">German</option>
+                  <option value="it">Italian</option>
+                  <option value="pt">Portuguese</option>
+                  <option value="ru">Russian</option>
+                  <option value="ja">Japanese</option>
+                  <option value="ko">Korean</option>
+                  <option value="zh">Chinese</option>
+                  <option value="hi">Hindi</option>
+                  <option value="ar">Arabic</option>
+                </select>
+                {isTranslating && (
+                  <div style={{ fontSize: "12px", color: "#0db8a6", marginTop: "8px" }}>
+                    Translating...
+                  </div>
+                )}
+              </div>
             </div>
           )}
+
         </header>
 
         {/* Book Content */}
