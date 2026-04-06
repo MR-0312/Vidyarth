@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useEffect } from "react";
+import { useThemeState } from "../hooks/useGlobalState";
 
-type Theme = "light";
+type Theme = "light" | "dark";
 
 interface ThemeContextType {
   theme: Theme;
@@ -17,19 +18,11 @@ export const useTheme = () => useContext(ThemeContext);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [theme, setTheme] = useState<Theme>(() => {
-    // Always use light theme globally (except on Read page)
-    return "light";
-  });
+  const { theme, toggleTheme } = useThemeState();
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
-
-  const toggleTheme = () => {
-    // In future, this can be used only on Read page if needed
-    // For now, do nothing to keep light theme globally
-  };
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
