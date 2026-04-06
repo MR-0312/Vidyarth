@@ -12,6 +12,7 @@ interface AuthContextType {
   login: (user: User) => void;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
+  validateToken: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextType>({
   login: () => {},
   logout: async () => {},
   isAuthenticated: false,
+  validateToken: async () => false,
 });
 
 export const useAuth = () => {
@@ -30,24 +32,77 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
+  // Initialize auth state from localStorage
   useEffect(() => {
-    // Check if token is stored in localStorage
-    const token = localStorage.getItem("koodoreader_token");
-    const storedUser = localStorage.getItem("koodoreader_user");
-    
-    if (token && storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.error("Failed to parse user from localStorage", error);
-        localStorage.removeItem("koodoreader_user");
-        localStorage.removeItem("koodoreader_token");
+    const initializeAuth = () => {
+      const token = localStorage.getItem("koodoreader_token");
+      const storedUser = localStorage.getItem("koodoreader_user");
+      
+      if (token && storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error("Failed to parse user from localStorage", error);
+          localStorage.removeItem("koodoreader_user");
+          localStorage.removeItem("koodoreader_token");
+          setIsAuthenticated(false);
+        }
+      } else {
+        setIsAuthenticated(false);
       }
-    }
+      setIsInitialized(true);
+    };
+
+    initializeAuth();
+
+    // Listen for storage changes (logout from other tabs)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "koodoreader_token") {
+        if (!e.newValue) {
+          // Token was removed (logout from another tab)
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
+
+  // Validate token periodically or on-demand
+  const validateToken = async (): Promise<boolean> => {
+    const token = localStorage.getItem("koodoreader_token");
+    
+    if (!token) {
+      setIsAuthenticated(false);
+      setUser(null);
+      return false;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/user`, {
+        headers: {
+          "x-auth-token": token,
+        },
+      });
+
+      if (response.ok) {
+        return true;
+      } else {
+        // Token is invalid/expired
+        logout();
+        return false;
+      }
+    } catch (error) {
+      console.error("Token validation failed:", error);
+      return false;
+    }
+  };
 
   const login = (userData: User) => {
     setUser(userData);
@@ -89,6 +144,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     login,
     logout,
     isAuthenticated,
+    validateToken,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
