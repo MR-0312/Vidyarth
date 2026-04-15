@@ -146,6 +146,47 @@ const UserQueries = {
     
     if (error && error.code !== 'PGRST116') throw error;
     return data || null;
+  },
+
+  // Get all users with pagination (admin only)
+  async getAllUsers(page: number = 1, limit: number = 10): Promise<{ users: Partial<UserData>[]; total: number | null }> {
+    const startIndex = (page - 1) * limit;
+    const { data, error, count } = await supabase
+      .from('users')
+      .select('id, username, email, profile_picture, bio, role, created_at', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(startIndex, startIndex + limit - 1);
+    
+    if (error) throw error;
+    return { users: (data as Partial<UserData>[]) || [], total: count };
+  },
+
+  // Get user by email without password
+  async getUserByEmail(email: string): Promise<Partial<UserData> | null> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, username, email, profile_picture, bio, role, created_at')
+      .eq('email', email)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return data || null;
+  },
+
+  // Search users by email or username
+  async searchUsers(query: string, page: number = 1, limit: number = 10): Promise<{ users: Partial<UserData>[]; total: number | null }> {
+    const startIndex = (page - 1) * limit;
+    const searchTerm = `%${query}%`;
+    
+    const { data, error, count } = await supabase
+      .from('users')
+      .select('id, username, email, profile_picture, bio, role, created_at', { count: 'exact' })
+      .or(`email.ilike.${searchTerm},username.ilike.${searchTerm}`)
+      .order('created_at', { ascending: false })
+      .range(startIndex, startIndex + limit - 1);
+    
+    if (error) throw error;
+    return { users: (data as Partial<UserData>[]) || [], total: count };
   }
 };
 

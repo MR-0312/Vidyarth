@@ -270,6 +270,106 @@ router.patch('/users/:id/role', adminMiddleware(), async (req: Request, res: Res
   }
 });
 
+/**
+ * GET /api/admin/users
+ * Get all users with pagination
+ */
+router.get('/users', adminMiddleware(), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const { users, total } = await UserQueries.getAllUsers(page, limit);
+
+    // Log admin action
+    await LoggingService.logActivity(req.user.id, 'ADMIN_VIEW_ALL_USERS', {
+      ipAddress: (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.connection.remoteAddress as string,
+      page,
+      limit,
+    } as any);
+
+    res.json({
+      users,
+      currentPage: page,
+      totalPages: Math.ceil((total || 0) / limit),
+      totalUsers: total,
+      msg: 'Users retrieved successfully'
+    });
+  } catch (err) {
+    console.error((err as Error).message);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+/**
+ * GET /api/admin/users/search?q=email
+ * Search users by email or username
+ */
+router.get('/users/search', adminMiddleware(), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const query = req.query.q as string;
+    
+    if (!query || query.trim().length < 2) {
+      res.status(400).json({ msg: 'Search query must be at least 2 characters' });
+      return;
+    }
+
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const { users, total } = await UserQueries.searchUsers(query, page, limit);
+
+    // Log admin action
+    await LoggingService.logActivity(req.user.id, 'ADMIN_SEARCH_USERS', {
+      ipAddress: (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.connection.remoteAddress as string,
+      searchQuery: query,
+      resultsCount: users.length,
+    } as any);
+
+    res.json({
+      users,
+      currentPage: page,
+      totalPages: Math.ceil((total || 0) / limit),
+      totalResults: total,
+      msg: 'Users search completed successfully'
+    });
+  } catch (err) {
+    console.error((err as Error).message);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+/**
+ * GET /api/admin/users/:id
+ * Get single user details
+ */
+router.get('/users/:id', adminMiddleware(), async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.params.id;
+
+    const user = await UserQueries.getUserProfile(userId);
+    if (!user) {
+      res.status(404).json({ msg: 'User not found' });
+      return;
+    }
+
+    // Log admin action
+    await LoggingService.logActivity(req.user.id, 'ADMIN_VIEW_USER_DETAILS', {
+      ipAddress: (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.connection.remoteAddress as string,
+      targetUserId: userId,
+      targetUsername: user.username,
+    } as any);
+
+    res.json({
+      user,
+      msg: 'User details retrieved successfully'
+    });
+  } catch (err) {
+    console.error((err as Error).message);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
 // ==================== ANALYTICS & STATISTICS ====================
 
 /**

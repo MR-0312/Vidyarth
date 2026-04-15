@@ -120,6 +120,24 @@ router.post(
   }
 );
 
+// @route   GET api/contributions/me
+// @desc    Get contributions by the authenticated user
+// @access  Private
+router.get('/me', authMiddleware(true), async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.user?.id) {
+      res.status(401).json({ msg: 'User not authenticated' });
+      return;
+    }
+
+    const contributions = await ContributionQueries.getByUserId(req.user.id);
+    res.json(contributions);
+  } catch (err) {
+    console.error((err as Error).message);
+    res.status(500).json({ msg: 'Server Error' });
+  }
+});
+
 // @route   GET api/contributions/user/:userId
 // @desc    Get contributions by a specific user
 // @access  Public
