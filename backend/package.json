@@ -2,10 +2,12 @@
   "name": "ebook-platform-backend",
   "version": "1.0.0",
   "description": "Backend for eBook Platform",
-  "main": "server.js",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "ts-node server.ts",
+    "dev:watch": "nodemon --exec ts-node server.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.38.4",
@@ -23,6 +25,17 @@
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^1.4.11",
+    "@types/node": "^20.10.6",
+    "@types/unzipper": "^0.10.11",
+    "@types/uuid": "^9.0.7",
+    "@types/xml2js": "^0.4.14",
+    "nodemon": "^3.1.14",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   }
 }
