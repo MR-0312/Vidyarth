@@ -6,6 +6,7 @@ const Navbar = () => {
   const auth = useAuth();
   const user = auth?.user;
   const logout = auth?.logout;
+  const isAdmin = auth?.isAdmin;
 
   const handleLogout = async () => {
     if (logout) {
@@ -13,8 +14,6 @@ const Navbar = () => {
         await logout();
       } catch (error) {
         console.error('Logout failed:', error);
-        // Even if logout fails, clear local state
-        // This is handled in the logout function
       }
     }
   };
@@ -22,17 +21,44 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="logo">
-        <Link to="/"> <span className="brand">Vidhyarth</span> </Link>
+        <Link to={isAdmin ? "/admin/dashboard" : "/"}>
+          <span className="brand">Vidhyarth {isAdmin && "(Admin)"}</span>
+        </Link>
       </div>
-      <div className="search-bar">
-        <input type="text" placeholder="Search books..." />
-        <button className="search-btn">🔍</button>
-      </div>
+
+      {!isAdmin && (
+        <div className="search-bar">
+          <input type="text" placeholder="Search books..." />
+          <button className="search-btn">🔍</button>
+        </div>
+      )}
+
       <div className="auth-buttons">
         {user ? (
           <>
-            <Link to="/read" className="nav-link">Read</Link>
-            <button onClick={handleLogout} className="logout-btn">Logout</button>
+            {isAdmin ? (
+              <>
+                <Link to="/admin/dashboard" className="nav-link">
+                  📊 Dashboard
+                </Link>
+                <Link to="/admin/pending-books" className="nav-link">
+                  📚 Books
+                </Link>
+                <Link to="/admin/users" className="nav-link">
+                  👥 Users
+                </Link>
+                <Link to="/admin/settings" className="nav-link">
+                  ⚙️ Settings
+                </Link>
+              </>
+            ) : (
+              <Link to="/library" className="nav-link">
+                Library
+              </Link>
+            )}
+            <button onClick={handleLogout} className="logout-btn">
+              Logout
+            </button>
           </>
         ) : (
           <>

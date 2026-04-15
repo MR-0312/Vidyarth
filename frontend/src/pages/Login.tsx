@@ -48,12 +48,31 @@ const Login = () => {
 
       if (userResponse.ok) {
         const userData = await userResponse.json();
-        login({ name: userData.username, email: userData.email });
+        login({
+          id: userData.id,
+          name: userData.username,
+          username: userData.username,
+          email: userData.email,
+          role: userData.role || data.role || 'user'
+        });
+        // Redirect based on role
+        if (userData.role === 'admin' || data.role === 'admin') {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/library");
+        }
       } else {
-        login({ name: email.split("@")[0], email });
+        login({
+          name: email.split("@")[0],
+          email,
+          role: data.role || 'user'
+        });
+        if (data.role === 'admin') {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/library");
+        }
       }
-
-      navigate("/library");
       setIsLoading(false);
     } catch (err) {
       setError("Failed to login. Please try again.");
