@@ -11,6 +11,7 @@ interface UserData {
   profile_picture?: string;
   bio?: string;
   preferred_categories?: string[];
+  role?: 'user' | 'admin';
   created_at?: string;
 }
 
@@ -52,6 +53,19 @@ interface ActivityMetadata {
   reviewContent?: string;
   duration?: number;
   readingProgress?: number;
+  endpoint?: string;
+  method?: string;
+  count?: number;
+  changes?: string[];
+  reason?: string;
+  bookTitle?: string;
+  author?: string;
+  userRole?: string;
+  targetUserId?: string;
+  targetUsername?: string;
+  newRole?: string;
+  previousRole?: string;
+  [key: string]: any; // Allow additional properties
 }
 
 // ==================== USER QUERIES ====================
@@ -126,7 +140,7 @@ const UserQueries = {
   async getUserProfile(id: string): Promise<Partial<UserData> | null> {
     const { data, error } = await supabase
       .from('users')
-      .select('id, username, email, profile_picture, bio, preferred_categories, created_at')
+      .select('id, username, email, profile_picture, bio, preferred_categories, role, created_at')
       .eq('id', id)
       .single();
     

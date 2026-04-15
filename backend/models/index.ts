@@ -7,6 +7,7 @@ export interface User {
   profile_picture: string;
   bio: string;
   preferred_categories: string[];
+  role: 'user' | 'admin';
   created_at: string;
 }
 
