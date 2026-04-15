@@ -4,14 +4,14 @@
  * @param {string} targetLanguage - Target language code (e.g., 'es', 'fr', 'de')
  * @returns {Promise<string>} - Translated text
  */
-async function translateText(text, targetLanguage) {
+async function translateText(text: string, targetLanguage: string): Promise<string> {
   if (!text || targetLanguage === 'en') {
     return text;
   }
 
   try {
     // Map language codes to MyMemory format if needed
-    const langMap = {
+    const langMap: Record<string, string> = {
       'es': 'es-ES',
       'fr': 'fr-FR', 
       'de': 'de-DE',
@@ -36,7 +36,7 @@ async function translateText(text, targetLanguage) {
       throw new Error(`MyMemory API error: ${response.statusText}`);
     }
 
-    const result = await response.json();
+    const result = await response.json() as any;
     
     if (result.responseStatus === 200) {
       console.log(`[MyMemory] Success: "${result.responseData.translatedText.substring(0, 50)}..."`);
@@ -46,7 +46,7 @@ async function translateText(text, targetLanguage) {
       return text;
     }
   } catch (error) {
-    console.error(`[MyMemory] Translation error for language ${targetLanguage}:`, error.message);
+    console.error(`[MyMemory] Translation error for language ${targetLanguage}:`, (error as Error).message);
     // Return original text if translation fails
     return text;
   }
@@ -59,20 +59,20 @@ async function translateText(text, targetLanguage) {
  * @param {number} chunkSize - Size of each chunk (default: 300)
  * @returns {Promise<string>} - Translated text
  */
-async function translateChunked(text, targetLanguage, chunkSize = 300) {
+async function translateChunked(text: string, targetLanguage: string, chunkSize: number = 300): Promise<string> {
   if (!text || targetLanguage === 'en') {
     return text;
   }
 
   try {
-    const chunks = [];
+    const chunks: string[] = [];
     for (let i = 0; i < text.length; i += chunkSize) {
       chunks.push(text.slice(i, i + chunkSize));
     }
 
     console.log(`[Translation] Chunked translation: ${chunks.length} chunks of max ${chunkSize} chars`);
     
-    const translatedChunks = [];
+    const translatedChunks: string[] = [];
     for (const chunk of chunks) {
       try {
         const translated = await translateText(chunk, targetLanguage);
@@ -92,7 +92,4 @@ async function translateChunked(text, targetLanguage, chunkSize = 300) {
   }
 }
 
-module.exports = {
-  translateText,
-  translateChunked,
-};
+export { translateText, translateChunked };

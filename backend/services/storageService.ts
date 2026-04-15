@@ -1,6 +1,6 @@
-const { supabase } = require('../db/queries');
-const { v4: uuidv4 } = require('uuid');
-const path = require('path');
+import supabase from '../db/supabase';
+import { v4 as uuidv4 } from 'uuid';
+import path from 'path';
 
 /**
  * Upload file to Supabase Storage
@@ -9,7 +9,7 @@ const path = require('path');
  * @param {string} fileType - 'cover' or 'ebook'
  * @returns {Promise<string>} - Public URL of the uploaded file
  */
-async function uploadFile(fileBuffer, fileName, fileType) {
+async function uploadFile(fileBuffer: Buffer, fileName: string, fileType: string): Promise<string> {
   if (!fileBuffer) {
     throw new Error('No file buffer provided');
   }
@@ -31,7 +31,7 @@ async function uploadFile(fileBuffer, fileName, fileType) {
     }
 
     // Upload file to Supabase Storage
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from(bucketName)
       .upload(uniqueFileName, fileBuffer, {
         cacheControl: '3600',
@@ -50,7 +50,7 @@ async function uploadFile(fileBuffer, fileName, fileType) {
 
     return urlData.publicUrl;
   } catch (error) {
-    throw new Error(`Supabase storage upload error: ${error.message}`);
+    throw new Error(`Supabase storage upload error: ${(error as Error).message}`);
   }
 }
 
@@ -59,7 +59,7 @@ async function uploadFile(fileBuffer, fileName, fileType) {
  * @param {string} fileUrl - Public URL of the file
  * @param {string} fileType - 'cover' or 'ebook'
  */
-async function deleteFile(fileUrl, fileType) {
+async function deleteFile(fileUrl: string, fileType: string): Promise<void> {
   if (!fileUrl) return;
 
   const bucketName = fileType === 'cover' ? 'book-covers' : 'ebooks';
@@ -73,11 +73,11 @@ async function deleteFile(fileUrl, fileType) {
       .from(bucketName)
       .remove([fileName]);
 
-    if (error && error.statusCode !== 404) {
+    if (error && (error as any).statusCode !== 404) {
       console.error(`Error deleting file: ${error.message}`);
     }
   } catch (error) {
-    console.error(`Supabase storage delete error: ${error.message}`);
+    console.error(`Supabase storage delete error: ${(error as Error).message}`);
   }
 }
 
@@ -86,8 +86,8 @@ async function deleteFile(fileUrl, fileType) {
  * @param {string} ext - File extension (e.g., '.epub', '.mobi', '.azw3')
  * @returns {string} - MIME type
  */
-function getContentType(ext) {
-  const mimeTypes = {
+function getContentType(ext: string): string {
+  const mimeTypes: Record<string, string> = {
     '.epub': 'application/epub+zip',
     '.mobi': 'application/x-mobipocket-ebook',
     '.azw3': 'application/vnd.amazon.ebook',
@@ -104,7 +104,7 @@ function getContentType(ext) {
  * Ensure Supabase Storage buckets exist
  * Creates 'book-covers' and 'ebooks' buckets if they don't exist
  */
-async function ensureBucketsExist() {
+async function ensureBucketsExist(): Promise<void> {
   const buckets = ['book-covers', 'ebooks'];
 
   for (const bucketName of buckets) {
@@ -121,13 +121,13 @@ async function ensureBucketsExist() {
 
       if (!bucketExists) {
         console.log(`Bucket ${bucketName} not found, creating...`);
-        const { data, error: createError } = await supabase.storage.createBucket(bucketName, {
+        const { error: createError } = await supabase.storage.createBucket(bucketName, {
           public: true,
           allowedMimeTypes: ['image/*', 'application/epub+zip', 'application/x-mobipocket-ebook', 'application/vnd.amazon.ebook']
         });
         
         if (createError) {
-          if (createError.statusCode === 409) {
+          if ((createError as any).statusCode === 409) {
             console.log(`Bucket ${bucketName} already exists`);
           } else {
             console.error(`Failed to create bucket ${bucketName}:`, createError.message);
@@ -139,14 +139,9 @@ async function ensureBucketsExist() {
         console.log(`✓ Bucket ${bucketName} already exists`);
       }
     } catch (err) {
-      console.error(`Error verifying bucket ${bucketName}:`, err.message);
+      console.error(`Error verifying bucket ${bucketName}:`, (err as Error).message);
     }
   }
 }
 
-module.exports = {
-  uploadFile,
-  deleteFile,
-  getContentType,
-  ensureBucketsExist
-};
+export { uploadFile, deleteFile, getContentType, ensureBucketsExist };

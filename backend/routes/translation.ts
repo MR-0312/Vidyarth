@@ -1,6 +1,7 @@
-const express = require('express');
-const router = express.Router();
-const { translateChunked } = require('../services/translationService');
+import express, { Request, Response, Router } from 'express';
+import { translateChunked } from '../services/translationService';
+
+const router: Router = express.Router();
 
 /**
  * POST /api/translate
@@ -8,21 +9,23 @@ const { translateChunked } = require('../services/translationService');
  * Body: { text: string, targetLanguage: string }
  * Response: { translatedText: string }
  */
-router.post('/translate', async (req, res) => {
+router.post('/translate', async (req: Request, res: Response): Promise<void> => {
   try {
     const { text, targetLanguage } = req.body;
 
     if (!text || !targetLanguage) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Missing required fields: text, targetLanguage',
       });
+      return;
     }
 
     // Increased limit to 50000 characters as backend handles chunking
     if (text.length > 50000) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Text too long. Maximum 50000 characters allowed.',
       });
+      return;
     }
 
     console.log(`[Translation] Translating ${text.length} chars to ${targetLanguage}`);
@@ -38,9 +41,9 @@ router.post('/translate', async (req, res) => {
     console.error('Translation API error:', error);
     res.status(500).json({
       error: 'Translation failed',
-      message: error.message,
+      message: (error as Error).message,
     });
   }
 });
 
-module.exports = router;
+export default router;

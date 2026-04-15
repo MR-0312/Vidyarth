@@ -1,4 +1,4 @@
-const { createClient } = require('@supabase/supabase-js');
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -8,11 +8,11 @@ if (!supabaseUrl || !supabaseServiceRoleKey) {
   throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables');
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+const supabase: SupabaseClient = createClient(supabaseUrl, supabaseServiceRoleKey, {
   auth: {
     autoRefreshToken: false,
     persistSession: false
   }
 });
 
-module.exports = supabase;
+export default supabase;

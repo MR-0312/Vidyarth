@@ -1,8 +1,8 @@
-const fs = require('fs');
-const path = require('path');
-const { Readable } = require('stream');
-const unzipper = require('unzipper');
-const xml2js = require('xml2js');
+import { Readable } from 'stream';
+import unzipper from 'unzipper';
+import xml2js from 'xml2js';
+import fs from 'fs';
+import path from 'path';
 
 const xmlParser = new xml2js.Parser();
 
@@ -11,20 +11,20 @@ const xmlParser = new xml2js.Parser();
  * @param {Buffer} fileBuffer - The EPUB file buffer
  * @returns {Promise<Array>} Array of chapters with structure: { chapter_number, title, start_page, end_page }
  */
-async function parseEPUB(fileBuffer) {
+async function parseEPUB(fileBuffer: Buffer): Promise<any[]> {
   try {
-    const chapters = [];
+    const chapters: any[] = [];
     let chapterCount = 1;
 
     // Create a readable stream from buffer
     const stream = Readable.from(fileBuffer);
 
     // Extract EPUB (which is a ZIP file)
-    const entries = {};
+    const entries: Record<string, any> = {};
     await new Promise((resolve, reject) => {
       stream
         .pipe(unzipper.Parse())
-        .on('entry', (entry) => {
+        .on('entry', (entry: any) => {
           const fileName = entry.path;
           entries[fileName] = entry;
           
@@ -49,9 +49,9 @@ async function parseEPUB(fileBuffer) {
       const spine = parsedOPF?.package?.spine?.[0]?.itemref || [];
 
       // Build chapters from manifest and spine
-      const spineIds = spine.map(ref => ref['$'].idref);
-      const manifestMap = {};
-      manifest.forEach(item => {
+      const spineIds = spine.map((ref: any) => ref['$'].idref);
+      const manifestMap: Record<string, any> = {};
+      manifest.forEach((item: any) => {
         manifestMap[item['$'].id] = {
           href: item['$'].href,
           mediaType: item['$']['media-type']
@@ -60,7 +60,7 @@ async function parseEPUB(fileBuffer) {
 
       // Create chapters from spine items
       let pageCount = 1;
-      spineIds.forEach((id, index) => {
+      spineIds.forEach((id: string, _index: number) => {
         const item = manifestMap[id];
         if (item && (item.mediaType.includes('html') || item.mediaType.includes('xhtml'))) {
           const title = `Chapter ${chapterCount}`;
@@ -86,7 +86,7 @@ async function parseEPUB(fileBuffer) {
       const parsedNCX = await xmlParser.parseStringPromise(ncxContent);
       
       const navPoints = parsedNCX?.ncx?.navMap?.[0]?.navPoint || [];
-      navPoints.forEach((navPoint, index) => {
+      navPoints.forEach((navPoint: any, index: number) => {
         if (chapters[index]) {
           const navLabel = navPoint?.navLabel?.[0]?.text?.[0];
           if (navLabel) {
@@ -124,10 +124,10 @@ async function parseEPUB(fileBuffer) {
 /**
  * Parse MOBI file - basic implementation
  * MOBI files are complex; we'll create default chapters
- * @param {Buffer} fileBuffer - The MOBI file buffer
+ * @param {Buffer} _fileBuffer - The MOBI file buffer
  * @returns {Promise<Array>} Array of chapters
  */
-async function parseMOBI(fileBuffer) {
+async function parseMOBI(_fileBuffer: Buffer): Promise<any[]> {
   try {
     // MOBI parsing is complex without external libraries
     // Return estimated chapters
@@ -158,7 +158,7 @@ async function parseMOBI(fileBuffer) {
  * @param {Buffer} fileBuffer - The AZW3 file buffer
  * @returns {Promise<Array>} Array of chapters
  */
-async function parseAZW3(fileBuffer) {
+async function parseAZW3(fileBuffer: Buffer): Promise<any[]> {
   try {
     // Try to parse as EPUB-like structure
     return await parseEPUB(fileBuffer);
@@ -181,16 +181,14 @@ async function parseAZW3(fileBuffer) {
  * @param {string} entryPath - Path within the ZIP
  * @returns {Promise<string>} Content of the entry
  */
-function readEntryContent(zipBuffer, entryPath) {
+function readEntryContent(zipBuffer: Buffer, entryPath: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const stream = Readable.from(zipBuffer);
-    let found = false;
 
     stream
       .pipe(unzipper.Parse())
-      .on('entry', (entry) => {
+      .on('entry', (entry: any) => {
         if (entry.path === entryPath) {
-          found = true;
           entry.pipe(fs.createWriteStream(path.join('/tmp', 'temp_entry')))
             .on('finish', () => {
               const content = fs.readFileSync(path.join('/tmp', 'temp_entry'), 'utf-8');
@@ -201,52 +199,8 @@ function readEntryContent(zipBuffer, entryPath) {
           entry.autodrain();
         }
       })
-      .on('error', reject)
-      .on('end', () => {
-        if (!found) reject(new Error(`Entry ${entryPath} not found`));
-      });
+      .on('error', reject);
   });
 }
 
-/**
- * Main function to parse book and extract chapters
- * @param {Buffer} fileBuffer - The ebook file buffer
- * @param {string} fileFormat - Format: 'epub', 'mobi', or 'azw3'
- * @returns {Promise<Array>} Array of chapters
- */
-async function parseBook(fileBuffer, fileFormat) {
-  try {
-    if (!fileBuffer || fileBuffer.length === 0) {
-      throw new Error('Invalid file buffer');
-    }
-
-    switch (fileFormat.toLowerCase()) {
-      case 'epub':
-        return await parseEPUB(fileBuffer);
-      case 'mobi':
-        return await parseMOBI(fileBuffer);
-      case 'azw3':
-        return await parseAZW3(fileBuffer);
-      default:
-        throw new Error(`Unsupported format: ${fileFormat}`);
-    }
-  } catch (error) {
-    console.error(`Error parsing ${fileFormat} file:`, error);
-    // Return default chapter structure
-    return [
-      {
-        chapter_number: 1,
-        title: 'Full Content',
-        start_page: 1,
-        end_page: 100
-      }
-    ];
-  }
-}
-
-module.exports = {
-  parseBook,
-  parseEPUB,
-  parseMOBI,
-  parseAZW3
-};
+export { parseEPUB, parseMOBI, parseAZW3 };
