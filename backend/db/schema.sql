@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
   profile_picture VARCHAR(500) DEFAULT 'default-profile.jpg',
   bio TEXT DEFAULT '',
   preferred_categories TEXT[] DEFAULT ARRAY[]::TEXT[],
+  role VARCHAR(20) DEFAULT 'user' CHECK (role IN ('user', 'admin')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

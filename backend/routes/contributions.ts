@@ -55,6 +55,8 @@ router.post(
         return;
       }
 
+      // Check if this is an anonymous upload
+      // trackAsContribution=false means upload was anonymous/no contribution record
       const trackAsContribution = req.body.trackAsContribution === 'true' || req.body.trackAsContribution === true;
       const fileFormat = getFileFormat(files.ebook[0].originalname);
       
@@ -69,7 +71,8 @@ router.post(
       // Upload ebook to Supabase Storage
       const ebookUrl = await uploadFile(files.ebook[0].buffer, files.ebook[0].originalname, 'ebook');
 
-      // Create new book in database
+      // Create new book in database with explicit status='pending'
+      // For anonymous uploads (trackAsContribution=false), ensure user_id is not set
       const newBook = await BookQueries.create({
         title,
         author,
@@ -78,18 +81,18 @@ router.post(
         cover_image: coverUrl,
         ebook_file: ebookUrl,
         file_format: fileFormat,
-        user_id: req.user?.id || undefined,
-        status: 'pending'
+        user_id: trackAsContribution && req.user?.id ? req.user.id : undefined,
+        status: 'pending'  // ALWAYS set to pending - requires admin approval
       });
 
-      // Create contribution record if tracked
+      // Create contribution record only if tracked (non-anonymous)
       let contribution = null;
-      if (trackAsContribution) {
-        contribution = await ContributionQueries.create(newBook.id!, req.user?.id || '');
+      if (trackAsContribution && req.user?.id) {
+        contribution = await ContributionQueries.create(newBook.id!, req.user.id);
 
         // Log CONTRIBUTE activity
         try {
-          await LoggingService.logActivity(req.user?.id || '', 'CONTRIBUTE', {
+          await LoggingService.logActivity(req.user.id, 'CONTRIBUTE', {
             bookId: newBook.id,
             sessionId: '',
             deviceType: 'WEB'
@@ -119,6 +122,24 @@ router.post(
     }
   }
 );
+
+// @route   GET api/contributions/me
+// @desc    Get contributions by the authenticated user
+// @access  Private
+router.get('/me', authMiddleware(true), async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.user?.id) {
+      res.status(401).json({ msg: 'User not authenticated' });
+      return;
+    }
+
+    const contributions = await ContributionQueries.getByUserId(req.user.id);
+    res.json(contributions);
+  } catch (err) {
+    console.error((err as Error).message);
+    res.status(500).json({ msg: 'Server Error' });
+  }
+});
 
 // @route   GET api/contributions/user/:userId
 // @desc    Get contributions by a specific user

@@ -34,6 +34,7 @@ import reviewsRoutes from './routes/reviews';
 import analyticsRoutes from './routes/analytics';
 import contributionsRoutes from './routes/contributions';
 import translationRoutes from './routes/translation';
+import adminRoutes from './routes/admin';
 
 // Start server after Supabase is properly initialized
 async function initializeApp(): Promise<void> {
@@ -64,6 +65,7 @@ function startServer(): void {
   app.use('/api/analytics', analyticsRoutes);
   app.use('/api/contributions', contributionsRoutes);
   app.use('/api', translationRoutes);
+  app.use('/api/admin', adminRoutes);
 
   // Health check endpoint
   app.get('/health', (_req: Request, res: Response) => {

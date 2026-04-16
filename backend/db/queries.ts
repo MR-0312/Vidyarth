@@ -11,6 +11,7 @@ interface UserData {
   profile_picture?: string;
   bio?: string;
   preferred_categories?: string[];
+  role?: 'user' | 'admin';
   created_at?: string;
 }
 
@@ -52,6 +53,19 @@ interface ActivityMetadata {
   reviewContent?: string;
   duration?: number;
   readingProgress?: number;
+  endpoint?: string;
+  method?: string;
+  count?: number;
+  changes?: string[];
+  reason?: string;
+  bookTitle?: string;
+  author?: string;
+  userRole?: string;
+  targetUserId?: string;
+  targetUsername?: string;
+  newRole?: string;
+  previousRole?: string;
+  [key: string]: any; // Allow additional properties
 }
 
 // ==================== USER QUERIES ====================
@@ -126,12 +140,53 @@ const UserQueries = {
   async getUserProfile(id: string): Promise<Partial<UserData> | null> {
     const { data, error } = await supabase
       .from('users')
-      .select('id, username, email, profile_picture, bio, preferred_categories, created_at')
+      .select('id, username, email, profile_picture, bio, preferred_categories, role, created_at')
       .eq('id', id)
       .single();
     
     if (error && error.code !== 'PGRST116') throw error;
     return data || null;
+  },
+
+  // Get all users with pagination (admin only)
+  async getAllUsers(page: number = 1, limit: number = 10): Promise<{ users: Partial<UserData>[]; total: number | null }> {
+    const startIndex = (page - 1) * limit;
+    const { data, error, count } = await supabase
+      .from('users')
+      .select('id, username, email, profile_picture, bio, role, created_at', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(startIndex, startIndex + limit - 1);
+    
+    if (error) throw error;
+    return { users: (data as Partial<UserData>[]) || [], total: count };
+  },
+
+  // Get user by email without password
+  async getUserByEmail(email: string): Promise<Partial<UserData> | null> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, username, email, profile_picture, bio, role, created_at')
+      .eq('email', email)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return data || null;
+  },
+
+  // Search users by email or username
+  async searchUsers(query: string, page: number = 1, limit: number = 10): Promise<{ users: Partial<UserData>[]; total: number | null }> {
+    const startIndex = (page - 1) * limit;
+    const searchTerm = `%${query}%`;
+    
+    const { data, error, count } = await supabase
+      .from('users')
+      .select('id, username, email, profile_picture, bio, role, created_at', { count: 'exact' })
+      .or(`email.ilike.${searchTerm},username.ilike.${searchTerm}`)
+      .order('created_at', { ascending: false })
+      .range(startIndex, startIndex + limit - 1);
+    
+    if (error) throw error;
+    return { users: (data as Partial<UserData>[]) || [], total: count };
   }
 };
 

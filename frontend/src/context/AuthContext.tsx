@@ -3,8 +3,11 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 const API_BASE_URL = "http://localhost:8080/api";
 
 interface User {
-  name: string;
+  id?: string;
+  name?: string;
+  username?: string;
   email: string;
+  role?: 'user' | 'admin';
 }
 
 interface AuthContextType {
@@ -12,6 +15,7 @@ interface AuthContextType {
   login: (user: User) => void;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   validateToken: () => Promise<boolean>;
 }
 
@@ -20,6 +24,7 @@ const AuthContext = createContext<AuthContextType>({
   login: () => {},
   logout: async () => {},
   isAuthenticated: false,
+  isAdmin: false,
   validateToken: async () => false,
 });
 
@@ -33,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Initialize auth state from localStorage
   useEffect(() => {
@@ -45,14 +51,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
           setIsAuthenticated(true);
+          setIsAdmin(parsedUser.role === 'admin');
         } catch (error) {
           console.error("Failed to parse user from localStorage", error);
           localStorage.removeItem("koodoreader_user");
           localStorage.removeItem("koodoreader_token");
           setIsAuthenticated(false);
+          setIsAdmin(false);
         }
       } else {
         setIsAuthenticated(false);
+        setIsAdmin(false);
       }
       setIsInitialized(true);
     };
@@ -66,6 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           // Token was removed (logout from another tab)
           setUser(null);
           setIsAuthenticated(false);
+          setIsAdmin(false);
         }
       }
     };
@@ -107,6 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const login = (userData: User) => {
     setUser(userData);
     setIsAuthenticated(true);
+    setIsAdmin(userData.role === 'admin');
     localStorage.setItem("koodoreader_user", JSON.stringify(userData));
   };
 
@@ -135,6 +146,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     // Clear local state regardless of backend response
     setUser(null);
     setIsAuthenticated(false);
+    setIsAdmin(false);
     localStorage.removeItem("koodoreader_user");
     localStorage.removeItem("koodoreader_token");
   };
@@ -144,8 +156,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     login,
     logout,
     isAuthenticated,
+    isAdmin,
     validateToken,
   };
+
+  if (!isInitialized) {
+    return null; // or a loading spinner
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

@@ -19,7 +19,7 @@ function getFileFormat(fileName: string): string | null {
 }
 
 // @route   GET api/books
-// @desc    Get all books with pagination and optional category filter
+// @desc    Get all approved books with pagination and optional category filter
 // @access  Public
 router.get('/', async (req: Request, res: Response): Promise<void> => {
   try {
@@ -40,7 +40,9 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
       }
     }
 
-    const filters = category ? { category } : {};
+    // Always filter for approved books only (not pending or rejected)
+    const filters: any = { status: 'approved' };
+    if (category) filters.category = category;
 
     const { books, total } = await BookQueries.getAll(page, limit, filters);
 
@@ -57,7 +59,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 });
 
 // @route   GET api/books/:bookId
-// @desc    Get a single book by ID
+// @desc    Get a single book by ID (only if approved, or user is the contributor/admin)
 // @access  Public
 router.get('/:bookId', async (req: Request, res: Response): Promise<void> => {
   try {
@@ -67,10 +69,23 @@ router.get('/:bookId', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    // Check if user has access to this book
+    const userId = (req as any).user?.id;
+    const userRole = (req as any).user?.role;
+    const isContributor = book.user_id === userId;
+    const isAdmin = userRole === 'admin';
+    const isApproved = book.status === 'approved';
+
+    // Only allow access if: approved OR (user is contributor) OR (user is admin)
+    if (!isApproved && !isContributor && !isAdmin) {
+      res.status(404).json({ msg: 'Book not found' });
+      return;
+    }
+
     // Log VIEW_BOOK activity if user is authenticated
-    if ((req as any).user?.id) {
+    if (userId) {
       try {
-        await LoggingService.logActivity((req as any).user.id, 'VIEW_BOOK', {
+        await LoggingService.logActivity(userId, 'VIEW_BOOK', {
           bookId: req.params.bookId,
           ipAddress: (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.connection.remoteAddress as string,
           userAgent: req.headers['user-agent'] as string,
