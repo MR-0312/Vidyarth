@@ -7,6 +7,8 @@ interface Review {
   _id?: string;
   id?: string;
   user?: {
+    _id?: string;
+    id?: string;
     name?: string;
     username?: string;
   };
@@ -104,7 +106,7 @@ const BookPreview = () => {
           // Check if user has already reviewed
           if (user && reviewsData.length > 0) {
             const userReviewed = reviewsData.some((review: Review) => {
-              const reviewUserId = review.user?._id || review.user?.id;
+              const reviewUserId = review.user?._id || (review.user?.id as string);
               return reviewUserId === user.id;
             });
             setUserHasReviewed(userReviewed);

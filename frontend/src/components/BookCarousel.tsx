@@ -59,9 +59,8 @@ const BookCarousel = () => {
   const hiddenCategoriesCount = (currentBook.categories?.length || 0) - 2;
 
   const handleBookClick = () => {
-    const bookId = currentBook._id || currentBook.id;
-    if (bookId) {
-      navigate(`/preview/${bookId}`);
+    if (currentBook.id) {
+      navigate(`/preview/${currentBook.id}`);
     }
   };
 

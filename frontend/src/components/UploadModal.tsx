@@ -39,7 +39,6 @@ const UploadModal = ({ isOpen, onClose, onSuccess }: UploadModalProps) => {
     details?: string;
   } | null>(null);
   const [showAnonymityChoice, setShowAnonymityChoice] = useState(false);
-  const [uploadAsAnonymous, setUploadAsAnonymous] = useState(false);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>

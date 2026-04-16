@@ -1,130 +1,14 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useBooks } from "../hooks/useBooks";
 
-// Categories with icons
-const categories = [
-  { name: "Fiction", icon: "📚", color: "#FF6B6B" },
-  { name: "Non-Fiction", icon: "🧠", color: "#4ECDC4" },
-  { name: "Mystery", icon: "🔍", color: "#FFD166" },
-  { name: "Romance", icon: "💖", color: "#FF9A8B" },
-  { name: "Sci-Fi", icon: "🚀", color: "#6B5B95" },
-  { name: "Fantasy", icon: "🐉", color: "#88B04B" },
-  { name: "Biography", icon: "👤", color: "#92A8D1" },
-  { name: "Horror", icon: "👻", color: "#955251" },
-];
-
-// Helper component for category display with tooltip
-const CategoryTags = ({ categories, maxDisplay = 2 }: { categories?: string[]; maxDisplay?: number }) => {
-  const [showCard, setShowCard] = useState(false);
-  
-  if (!categories || categories.length === 0) return null;
-
-  const displayedCategories = categories.slice(0, maxDisplay);
-  const hiddenCount = categories.length - maxDisplay;
-
-  return (
-    <div style={{ position: "relative" }}>
-      <div
-        style={{
-          display: "flex",
-          gap: "6px",
-          flexWrap: "wrap",
-          alignItems: "center",
-        }}
-        onMouseEnter={() => hiddenCount > 0 && setShowCard(true)}
-        onMouseLeave={() => setShowCard(false)}
-      >
-        {displayedCategories.map((cat, idx) => (
-          <span
-            key={idx}
-            style={{
-              fontSize: "11px",
-              color: "white",
-              padding: "3px 8px",
-              backgroundColor: "#0db8a6",
-              borderRadius: "12px",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {cat}
-          </span>
-        ))}
-        {hiddenCount > 0 && (
-          <span
-            style={{
-              fontSize: "11px",
-              color: "var(--text-muted)",
-              padding: "3px 6px",
-              borderRadius: "12px",
-              border: "1px solid var(--border-color)",
-              cursor: "pointer",
-              fontWeight: "600",
-            }}
-          >
-            +{hiddenCount}
-          </span>
-        )}
-      </div>
-      
-      {showCard && hiddenCount > 0 && (
-        <div
-          style={{
-            position: "absolute",
-            bottom: "calc(100% + 8px)",
-            left: 0,
-            backgroundColor: "var(--bg-card)",
-            border: "1px solid var(--border-color)",
-            borderRadius: "8px",
-            padding: "12px 16px",
-            zIndex: 1000,
-            fontSize: "12px",
-            color: "var(--text-primary)",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
-            minWidth: "200px",
-            maxWidth: "300px",
-          }}
-        >
-          <div style={{ fontWeight: "600", marginBottom: "8px", color: "var(--text-book-title)" }}>
-            All Genres ({categories.length})
-          </div>
-          <div
-            style={{
-              display: "flex",
-              gap: "6px",
-              flexWrap: "wrap",
-            }}
-          >
-            {categories.map((cat, idx) => (
-              <span
-                key={idx}
-                style={{
-                  fontSize: "11px",
-                  color: "white",
-                  padding: "4px 10px",
-                  backgroundColor: "#0db8a6",
-                  borderRadius: "12px",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {cat}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
 const Home = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   
   // Fetch featured books dynamically
-  const { books: allBooks, loading: booksLoading } = useBooks({ limit: 50, autoFetch: !isAuthenticated });
-  const featuredBooks = allBooks.slice(0, 4); // Get first 4 books as featured
+  const { books: _allBooks } = useBooks({ limit: 50, autoFetch: !isAuthenticated });
 
   // Redirect to library if already logged in
   useEffect(() => {

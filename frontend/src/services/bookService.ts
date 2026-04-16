@@ -10,6 +10,7 @@ export interface Book {
   description?: string;
   cover_image?: string;
   coverImage?: string;
+  image?: string;
   ebook_file?: string;
   eBookFile?: string;
   file_format?: string;

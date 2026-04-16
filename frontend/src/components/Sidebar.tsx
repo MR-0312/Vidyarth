@@ -1,10 +1,11 @@
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 interface SidebarItem {
   id: string;
   label: string;
-  icon: JSX.Element;
+  icon: React.ReactElement;
 }
 
 interface SidebarProps {

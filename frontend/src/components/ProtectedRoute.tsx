@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useEffect, useState } from "react";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, validateToken } = useAuth();
+  const { validateToken } = useAuth();
   const location = useLocation();
   const [isValidated, setIsValidated] = useState<boolean | null>(null);
 
