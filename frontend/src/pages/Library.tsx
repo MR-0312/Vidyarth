@@ -137,6 +137,7 @@ const Library = () => {
           categories: book.categories || [],
           rating: book.average_rating || 0,
           progress: 0,
+          status: book.status || "pending", // Include status from book data
         };
       });
       setUserContributions(books);
@@ -419,6 +420,7 @@ const Library = () => {
                   book={book}
                   viewMode={viewMode}
                   navigate={navigate}
+                  isContribution={activeNavItem === "contributions"}
                 />
               ))}
             </div>
@@ -454,9 +456,11 @@ interface BookCardProps {
     progress?: number;
     categories?: string[];
     rating?: number;
+    status?: "pending" | "approved" | "rejected";
   };
   viewMode: "grid" | "list";
   navigate: any;
+  isContribution?: boolean; // Show status badge if true
 }
 
 // Helper component for category display with hoverable card
@@ -562,10 +566,25 @@ const CategoryTags = ({ categories, maxDisplay = 2 }: { categories?: string[]; m
   );
 };
 
-const BookCard = ({ book, viewMode, navigate }: BookCardProps) => {
+const BookCard = ({ book, viewMode, navigate, isContribution }: BookCardProps) => {
   const handleCardClick = () => {
     navigate(`/preview/${book.id}`);
   };
+
+  // Status badge styling
+  const getStatusColor = (status?: string) => {
+    switch (status) {
+      case "approved":
+        return { bg: "#d4edda", text: "#155724", label: "Approved ✓" };
+      case "rejected":
+        return { bg: "#f8d7da", text: "#721c24", label: "Rejected ✗" };
+      case "pending":
+      default:
+        return { bg: "#fff3cd", text: "#856404", label: "Pending ⏳" };
+    }
+  };
+
+  const statusColor = getStatusColor(book.status);
 
   if (viewMode === "list") {
     return (
@@ -662,6 +681,21 @@ const BookCard = ({ book, viewMode, navigate }: BookCardProps) => {
             >
               {book.format}
             </span>
+            {isContribution && book.status && (
+              <span
+                style={{
+                  fontSize: "12px",
+                  color: statusColor.text,
+                  padding: "4px 10px",
+                  backgroundColor: statusColor.bg,
+                  borderRadius: "4px",
+                  fontWeight: "600",
+                  border: `1px solid ${statusColor.text}`,
+                }}
+              >
+                {statusColor.label}
+              </span>
+            )}
             {book.rating != null && book.rating > 0 && (
               <span
                 style={{
@@ -822,6 +856,21 @@ const BookCard = ({ book, viewMode, navigate }: BookCardProps) => {
           >
             {book.format}
           </span>
+          {isContribution && book.status && (
+            <span
+              style={{
+                fontSize: "11px",
+                color: statusColor.text,
+                padding: "3px 8px",
+                backgroundColor: statusColor.bg,
+                borderRadius: "4px",
+                fontWeight: "600",
+                border: `1px solid ${statusColor.text}`,
+              }}
+            >
+              {statusColor.label}
+            </span>
+          )}
           {book.rating != null && book.rating > 0 && (
             <span
               style={{
