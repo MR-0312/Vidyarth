@@ -16,7 +16,11 @@ const app: Express = express();
 // In development, fall back to the default Vite dev server origin.
 // In production, CORS_ORIGIN must be set to avoid permissive access.
 if (process.env.NODE_ENV === 'production' && !process.env.CORS_ORIGIN) {
-  console.error('CORS_ORIGIN environment variable is not set in production. Exiting.');
+  console.error(
+    'CORS_ORIGIN environment variable is not set in production. ' +
+    'Set it to a comma-separated list of allowed origins, e.g.: ' +
+    'CORS_ORIGIN=https://your-app.vercel.app,https://your-custom-domain.com'
+  );
   process.exit(1);
 }
 
