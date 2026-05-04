@@ -12,10 +12,17 @@ if (missingEnvVars.length > 0) {
 
 const app: Express = express();
 
-// CORS — allow origins from env variable or fall back to permissive dev default
+// CORS — allow origins from env variable.
+// In development, fall back to the default Vite dev server origin.
+// In production, CORS_ORIGIN must be set to avoid permissive access.
+if (process.env.NODE_ENV === 'production' && !process.env.CORS_ORIGIN) {
+  console.error('CORS_ORIGIN environment variable is not set in production. Exiting.');
+  process.exit(1);
+}
+
 const corsOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
-  : true;
+  : ['http://localhost:5173'];
 
 // Middleware
 app.use(cors({ origin: corsOrigins, credentials: true }));
