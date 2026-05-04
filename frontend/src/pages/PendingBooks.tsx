@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import AdminLayout from "../components/AdminLayout";
+import { API_URL } from "../config/api";
 
 interface PendingBook {
   id: string;
@@ -29,7 +30,7 @@ const PendingBooks: React.FC = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("koodoreader_token");
-      const response = await fetch("http://localhost:8080/api/admin/books/pending", {
+      const response = await fetch(`${API_URL}/admin/books/pending`, {
         headers: {
           "x-auth-token": token || "",
         },
@@ -55,7 +56,7 @@ const PendingBooks: React.FC = () => {
       setActionLoading(true);
       const token = localStorage.getItem("koodoreader_token");
       const response = await fetch(
-        `http://localhost:8080/api/admin/books/${bookId}/approve`,
+        `${API_URL}/admin/books/${bookId}/approve`,
         {
           method: "PUT",
           headers: {
@@ -93,7 +94,7 @@ const PendingBooks: React.FC = () => {
       setActionLoading(true);
       const token = localStorage.getItem("koodoreader_token");
       const response = await fetch(
-        `http://localhost:8080/api/admin/books/${bookId}/reject`,
+        `${API_URL}/admin/books/${bookId}/reject`,
         {
           method: "PUT",
           headers: {

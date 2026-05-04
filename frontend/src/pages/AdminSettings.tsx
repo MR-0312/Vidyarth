@@ -1,5 +1,6 @@
 import React from "react";
 import AdminLayout from "../components/AdminLayout";
+import { API_URL } from "../config/api";
 
 const AdminSettings: React.FC = () => {
   return (
@@ -17,7 +18,7 @@ const AdminSettings: React.FC = () => {
               </div>
               <div className="setting-item">
                 <label>API Base URL:</label>
-                <p>http://localhost:8080/api</p>
+                <p>{API_URL}</p>
               </div>
               <div className="setting-item">
                 <label>Version:</label>

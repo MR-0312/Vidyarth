@@ -1,6 +1,5 @@
 // Book API service
-const API_BASE_URL = "http://localhost:8080/api";
-const UPLOADS_BASE_URL = "http://localhost:8080";
+import { API_URL as API_BASE_URL, API_BASE_URL as UPLOADS_BASE_URL } from "../config/api";
 
 export interface Book {
   _id?: string;

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
+import { API_URL } from "../config/api";
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -174,7 +175,7 @@ const UploadModal = ({ isOpen, onClose, onSuccess }: UploadModalProps) => {
         }
       }
 
-      const response = await fetch("http://localhost:8080/api/contributions", {
+      const response = await fetch(`${API_URL}/contributions`, {
         method: "POST",
         body: submitFormData,
         headers: headers,

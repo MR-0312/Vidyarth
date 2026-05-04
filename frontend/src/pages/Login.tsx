@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { API_URL } from "../config/api";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -16,7 +17,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8080/api/auth/login", {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -40,7 +41,7 @@ const Login = () => {
       localStorage.setItem("koodoreader_token", data.token);
       
       // Fetch user data using the token
-      const userResponse = await fetch("http://localhost:8080/api/auth/user", {
+      const userResponse = await fetch(`${API_URL}/auth/user`, {
         headers: {
           "x-auth-token": data.token,
         },

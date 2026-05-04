@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { API_URL } from "../config/api";
 
 interface Chapter {
   id: string;
@@ -86,7 +87,7 @@ const Read = () => {
     
     try {
       setIsTranslating(true);
-      const response = await fetch("http://localhost:8080/api/translate", {
+      const response = await fetch(`${API_URL}/translate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -119,13 +120,13 @@ const Read = () => {
         setLoading(true);
         
         // Fetch book details
-        const bookResponse = await fetch(`http://localhost:8080/api/books/${bookId}`);
+        const bookResponse = await fetch(`${API_URL}/books/${bookId}`);
         if (!bookResponse.ok) throw new Error('Failed to fetch book');
         const bookData = await bookResponse.json();
         setBook(bookData);
 
         // Fetch chapters list
-        const chaptersResponse = await fetch(`http://localhost:8080/api/books/${bookId}/chapters`);
+        const chaptersResponse = await fetch(`${API_URL}/books/${bookId}/chapters`);
         if (!chaptersResponse.ok) throw new Error('Failed to fetch chapters');
         const chaptersData = await chaptersResponse.json();
         setChapters(chaptersData);
@@ -133,7 +134,7 @@ const Read = () => {
         // Load first chapter content if available
         if (chaptersData.length > 0) {
           const firstChapter = chaptersData[0];
-          const contentResponse = await fetch(`http://localhost:8080/api/books/${bookId}/chapters/${firstChapter.id}`);
+          const contentResponse = await fetch(`${API_URL}/books/${bookId}/chapters/${firstChapter.id}`);
           if (contentResponse.ok) {
             const chapterData = await contentResponse.json();
             setCurrentChapter(chapterData);
@@ -161,7 +162,7 @@ const Read = () => {
       
       for (const chapter of chapters) {
         try {
-          const response = await fetch(`http://localhost:8080/api/books/${bookId}/chapters/${chapter.id}`);
+          const response = await fetch(`${API_URL}/books/${bookId}/chapters/${chapter.id}`);
           if (response.ok) {
             const chapterData = await response.json();
             if (chapterData.content) {
@@ -188,7 +189,7 @@ const Read = () => {
       
       try {
         const chapter = chapters[currentChapterIndex];
-        const response = await fetch(`http://localhost:8080/api/books/${bookId}/chapters/${chapter.id}`);
+        const response = await fetch(`${API_URL}/books/${bookId}/chapters/${chapter.id}`);
         if (response.ok) {
           let chapterData = await response.json();
           

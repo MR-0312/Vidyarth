@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-
-const API_BASE_URL = "http://localhost:8080/api";
+import { API_URL as API_BASE_URL } from "../config/api";
 
 interface User {
   id?: string;

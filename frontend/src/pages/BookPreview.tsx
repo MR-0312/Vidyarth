@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { bookService, Book } from "../services/bookService";
+import { API_URL } from "../config/api";
 
 interface Review {
   _id?: string;
@@ -98,7 +99,7 @@ const BookPreview = () => {
       if (!bookId) return;
       try {
         setLoadingReviews(true);
-        const response = await fetch(`http://localhost:8080/api/reviews/${bookId}`);
+        const response = await fetch(`${API_URL}/reviews/${bookId}`);
         if (response.ok) {
           const reviewsData = await response.json();
           setReviews(reviewsData);
@@ -128,7 +129,7 @@ const BookPreview = () => {
       if (!bookId) return;
       try {
         setLoadingChapters(true);
-        const response = await fetch(`http://localhost:8080/api/books/${bookId}/chapters`);
+        const response = await fetch(`${API_URL}/books/${bookId}/chapters`);
         if (response.ok) {
           const chaptersData = await response.json();
           setChapters(chaptersData);
@@ -163,7 +164,7 @@ const BookPreview = () => {
         return;
       }
 
-      const response = await fetch("http://localhost:8080/api/library/add", {
+      const response = await fetch(`${API_URL}/library/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -199,7 +200,7 @@ const BookPreview = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:8080/api/reviews/${bookId}`, {
+      const response = await fetch(`${API_URL}/reviews/${bookId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -264,7 +265,7 @@ const BookPreview = () => {
 
       // Try to send to backend if endpoint exists, otherwise just log it
       try {
-        const response = await fetch("http://localhost:8080/api/reports", {
+        const response = await fetch(`${API_URL}/reports`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

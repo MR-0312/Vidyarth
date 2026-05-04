@@ -5,6 +5,7 @@ import Sidebar from "../components/Sidebar";
 import UploadModal from "../components/UploadModal";
 import { useBooks } from "../hooks/useBooks";
 import { SIDEBAR_ITEMS } from "../constants/libraryConstants";
+import { API_URL } from "../config/api";
 import {
   BooksIcon,
   FavoritesIcon,
@@ -101,7 +102,7 @@ const Library = () => {
         return;
       }
 
-      const response = await fetch("http://localhost:8080/api/contributions/me", {
+      const response = await fetch(`${API_URL}/contributions/me`, {
         headers: {
           "x-auth-token": token,
         },

@@ -12,8 +12,13 @@ if (missingEnvVars.length > 0) {
 
 const app: Express = express();
 
+// CORS — allow origins from env variable or fall back to permissive dev default
+const corsOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+  : true;
+
 // Middleware
-app.use(cors());
+app.use(cors({ origin: corsOrigins, credentials: true }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
