@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import AdminLayout from "../components/AdminLayout";
+import { API_URL } from "../config/api";
 
 interface AdminUser {
   id: string;
@@ -29,7 +30,7 @@ const UserManagement: React.FC = () => {
       setError(null);
       const token = localStorage.getItem("koodoreader_token");
       const response = await fetch(
-        `http://localhost:8080/api/admin/users/search?q=${encodeURIComponent(searchEmail)}`,
+        `${API_URL}/admin/users/search?q=${encodeURIComponent(searchEmail)}`,
         {
           headers: {
             "x-auth-token": token || "",
@@ -63,7 +64,7 @@ const UserManagement: React.FC = () => {
       setError(null);
       const token = localStorage.getItem("koodoreader_token");
       const response = await fetch(
-        `http://localhost:8080/api/admin/users?page=1&limit=50`,
+        `${API_URL}/admin/users?page=1&limit=50`,
         {
           headers: {
             "x-auth-token": token || "",
@@ -114,7 +115,7 @@ const UserManagement: React.FC = () => {
       setActionMessage(null);
       const token = localStorage.getItem("koodoreader_token");
       const response = await fetch(
-        `http://localhost:8080/api/admin/users/${userId}/role`,
+        `${API_URL}/admin/users/${userId}/role`,
         {
           method: "PATCH",
           headers: {

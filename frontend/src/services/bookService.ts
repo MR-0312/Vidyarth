@@ -1,6 +1,5 @@
 // Book API service
-const API_BASE_URL = "http://localhost:8080/api";
-const UPLOADS_BASE_URL = "http://localhost:8080";
+import { API_URL, API_BASE_URL } from "../config/api";
 
 export interface Book {
   _id?: string;
@@ -32,7 +31,7 @@ export const bookService = {
     category?: string
   ): Promise<{ books: Book[]; totalBooks: number; totalPages: number }> {
     try {
-      let url = `${API_BASE_URL}/books?page=${page}&limit=${limit}`;
+      let url = `${API_URL}/books?page=${page}&limit=${limit}`;
       if (category) {
         url += `&category=${category}`;
       }
@@ -52,7 +51,7 @@ export const bookService = {
   // Fetch a single book by ID
   async getBookById(id: string): Promise<Book> {
     try {
-      const response = await fetch(`${API_BASE_URL}/books/${id}`);
+      const response = await fetch(`${API_URL}/books/${id}`);
       if (!response.ok) {
         throw new Error("Failed to fetch book");
       }
@@ -68,7 +67,7 @@ export const bookService = {
   async getBooksByCategory(category: string): Promise<Book[]> {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/books?category=${category}`
+        `${API_URL}/books?category=${category}`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch books by category");
@@ -91,7 +90,7 @@ export const bookService = {
     const coverUrl = coverPath.startsWith('http')
       ? coverPath
       : coverPath
-      ? `${UPLOADS_BASE_URL}/${coverPath.replace(/\\/g, "/")}`
+      ? `${API_BASE_URL}/${coverPath.replace(/\\/g, "/")}`
       : "https://covers.openlibrary.org/b/id/12860656-L.jpg";
 
     const bookId = book._id || book.id || "";

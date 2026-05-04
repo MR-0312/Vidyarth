@@ -11,6 +11,13 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: ["localhost", "https://ecclesiologically-specular-britt.ngrok-free.dev"],
+    // Proxy /api requests to the backend during local development so the
+    // frontend doesn't need to set VITE_API_BASE_URL in development.
+    proxy: {
+      "/api": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
+    },
   },
 });

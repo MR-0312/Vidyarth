@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import AdminLayout from "../components/AdminLayout";
+import { API_URL } from "../config/api";
 
 interface AdminStats {
   books: {
@@ -21,7 +22,7 @@ const AdminDashboard: React.FC = () => {
       try {
         setLoading(true);
         const token = localStorage.getItem("koodoreader_token");
-        const response = await fetch("http://localhost:8080/api/admin/stats", {
+        const response = await fetch(`${API_URL}/admin/stats`, {
           headers: {
             "x-auth-token": token || "",
           },
