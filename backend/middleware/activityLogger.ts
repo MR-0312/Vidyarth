@@ -7,7 +7,7 @@ declare global {
   namespace Express {
     interface Request {
       logger?: LoggerData;
-      session?: { id: string };
+      session: { id: string };
     }
   }
 }
