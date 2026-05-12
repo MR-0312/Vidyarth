@@ -2,6 +2,7 @@ import express, { Request, Response, Router } from 'express';
 import { translateChunked } from '../services/translationService';
 
 const router: Router = express.Router();
+const LANGUAGE_CODE_PATTERN = /^[a-z]{2,3}(?:-[a-z]{2,8})?$/;
 
 /**
  * POST /api/translate
@@ -29,7 +30,7 @@ router.post('/translate', async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    if (!/^[a-z]{2,3}(?:-[a-z]{2,8})?$/.test(normalizedTargetLanguage)) {
+    if (!LANGUAGE_CODE_PATTERN.test(normalizedTargetLanguage)) {
       res.status(400).json({
         error: 'Invalid targetLanguage format. Expected ISO language code (e.g., en, es, zh-cn).',
       });
