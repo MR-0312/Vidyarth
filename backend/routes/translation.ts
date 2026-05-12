@@ -31,7 +31,7 @@ router.post('/translate', async (req: Request, res: Response): Promise<void> => 
 
     if (!/^[a-z]{2,3}(?:-[a-z]{2,8})?$/.test(normalizedTargetLanguage)) {
       res.status(400).json({
-        error: 'Invalid targetLanguage format.',
+        error: 'Invalid targetLanguage format. Expected ISO language code (e.g., en, es, zh-cn).',
       });
       return;
     }
