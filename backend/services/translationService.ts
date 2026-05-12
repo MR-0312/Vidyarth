@@ -5,7 +5,9 @@
  * @returns {Promise<string>} - Translated text
  */
 async function translateText(text: string, targetLanguage: string): Promise<string> {
-  if (!text || targetLanguage === 'en') {
+  const normalizedTargetLanguage = targetLanguage.trim().toLowerCase();
+
+  if (!text || normalizedTargetLanguage === 'en') {
     return text;
   }
 
@@ -25,9 +27,10 @@ async function translateText(text: string, targetLanguage: string): Promise<stri
       'ar': 'ar-SA',
     };
 
-    const targetLang = langMap[targetLanguage] || targetLanguage;
+    const targetLang = langMap[normalizedTargetLanguage] || normalizedTargetLanguage;
     const encodedText = encodeURIComponent(text);
-    const url = `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${targetLang}`;
+    const encodedTargetLang = encodeURIComponent(targetLang);
+    const url = `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${encodedTargetLang}`;
 
     console.log(`[MyMemory] Translating: "${text.substring(0, 50)}..." to ${targetLanguage} (${targetLang})`);
     
@@ -60,7 +63,9 @@ async function translateText(text: string, targetLanguage: string): Promise<stri
  * @returns {Promise<string>} - Translated text
  */
 async function translateChunked(text: string, targetLanguage: string, chunkSize: number = 300): Promise<string> {
-  if (!text || targetLanguage === 'en') {
+  const normalizedTargetLanguage = targetLanguage.trim().toLowerCase();
+
+  if (!text || normalizedTargetLanguage === 'en') {
     return text;
   }
 
@@ -75,7 +80,7 @@ async function translateChunked(text: string, targetLanguage: string, chunkSize:
     const translatedChunks: string[] = [];
     for (const chunk of chunks) {
       try {
-        const translated = await translateText(chunk, targetLanguage);
+        const translated = await translateText(chunk, normalizedTargetLanguage);
         translatedChunks.push(translated);
         // Add small delay between requests to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 100));
