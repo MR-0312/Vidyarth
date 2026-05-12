@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 
 // Validate environment variables
 const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'JWT_SECRET'];
@@ -32,6 +33,16 @@ const corsOrigins = process.env.CORS_ORIGIN
 app.use(cors({ origin: corsOrigins, credentials: true }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+// Protect API routes from request floods that can trigger expensive DB/storage work.
+// Skip CORS preflight requests so browser clients are limited based on real API calls.
+app.use('/api', rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req: Request) => req.method === 'OPTIONS'
+}));
 
 // Import activity logger
 import activityLogger from './middleware/activityLogger';
