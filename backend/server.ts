@@ -33,9 +33,11 @@ const corsOrigins = process.env.CORS_ORIGIN
 app.use(cors({ origin: corsOrigins, credentials: true }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+// Protect API routes from request floods that can trigger expensive DB/storage work.
 app.use('/api', rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
+  message: { error: 'Too many requests. Please try again later.' },
   standardHeaders: true,
   legacyHeaders: false
 }));
