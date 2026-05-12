@@ -43,6 +43,7 @@ import { ensureBucketsExist } from './services/storageService';
 
 // Import routes
 import authRoutes from './routes/auth';
+import githubRoutes from './routes/github';
 import usersRoutes from './routes/users';
 import booksRoutes from './routes/books';
 import favoritesRoutes from './routes/favorites';
@@ -74,6 +75,7 @@ async function initializeApp(): Promise<void> {
 function startServer(): void {
   // Routes
   app.use('/api/auth', authRoutes);
+  app.use('/api/oauth/github', githubRoutes);
   app.use('/api/users', usersRoutes);
   app.use('/api/books', booksRoutes);
   app.use('/api/favorites', favoritesRoutes);

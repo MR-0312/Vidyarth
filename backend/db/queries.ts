@@ -12,6 +12,9 @@ interface UserData {
   bio?: string;
   preferred_categories?: string[];
   role?: 'user' | 'admin';
+  github_id?: string;
+  github_username?: string;
+  oauth_provider?: string;
   created_at?: string;
 }
 
@@ -65,6 +68,7 @@ interface ActivityMetadata {
   targetUsername?: string;
   newRole?: string;
   previousRole?: string;
+  oauthProvider?: string;
   [key: string]: any; // Allow additional properties
 }
 
@@ -187,6 +191,68 @@ const UserQueries = {
     
     if (error) throw error;
     return { users: (data as Partial<UserData>[]) || [], total: count };
+  },
+
+  // Find user by GitHub ID
+  async findByGithubId(githubId: string): Promise<UserData | null> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('github_id', githubId)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return (data as UserData) || null;
+  },
+
+  // Create or update OAuth user
+  async createOrUpdateOAuthUser(userData: UserData): Promise<UserData> {
+    const { github_id, email, username, github_username, profile_picture } = userData;
+    
+    // Check if user exists by GitHub ID
+    if (github_id) {
+      const existingUser = await this.findByGithubId(github_id);
+      if (existingUser) {
+        // Update existing user
+        return await this.update(existingUser.id!, {
+          github_username,
+          profile_picture,
+          oauth_provider: 'github',
+        });
+      }
+    }
+    
+    // Check if user exists by email
+    const existingByEmail = await this.findByEmail(email);
+    if (existingByEmail) {
+      // Update existing user with GitHub info
+      return await this.update(existingByEmail.id!, {
+        github_id,
+        github_username,
+        profile_picture,
+        oauth_provider: 'github',
+      });
+    }
+    
+    // Create new user
+    const { data, error } = await supabase
+      .from('users')
+      .insert([
+        {
+          username,
+          email,
+          github_id,
+          github_username,
+          profile_picture,
+          oauth_provider: 'github',
+          password: null,
+        }
+      ])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as UserData;
   }
 };
 

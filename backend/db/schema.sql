@@ -3,13 +3,17 @@ CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   username VARCHAR(100) NOT NULL,
   email VARCHAR(100) NOT NULL UNIQUE,
-  password VARCHAR(255) NOT NULL,
+  password VARCHAR(255),
   profile_picture VARCHAR(500) DEFAULT 'default-profile.jpg',
   bio TEXT DEFAULT '',
   preferred_categories TEXT[] DEFAULT ARRAY[]::TEXT[],
   role VARCHAR(20) DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+  github_id VARCHAR(100),
+  github_username VARCHAR(100),
+  oauth_provider VARCHAR(50),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(github_id)
 );
 
 -- Create Books table
