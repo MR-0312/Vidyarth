@@ -25,8 +25,8 @@ async function translateText(text: string, targetLanguage: string): Promise<stri
       'ar': 'ar-SA',
     };
 
-    const sanitizedTargetLanguage = targetLanguage.trim();
-    const targetLang = langMap[sanitizedTargetLanguage.toLowerCase()] || sanitizedTargetLanguage;
+    const normalizedTargetLanguage = targetLanguage.trim().toLowerCase();
+    const targetLang = langMap[normalizedTargetLanguage] || normalizedTargetLanguage;
     const encodedText = encodeURIComponent(text);
     const encodedTargetLang = encodeURIComponent(targetLang);
     const url = `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${encodedTargetLang}`;

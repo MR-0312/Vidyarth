@@ -20,7 +20,7 @@ router.post('/translate', async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    const normalizedTargetLanguage = targetLanguage.trim();
+    const normalizedTargetLanguage = targetLanguage.trim().toLowerCase();
 
     if (!text || !normalizedTargetLanguage) {
       res.status(400).json({
@@ -29,7 +29,7 @@ router.post('/translate', async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    if (!/^[a-zA-Z-]{2,10}$/.test(normalizedTargetLanguage)) {
+    if (!/^[a-z]{2,3}(?:-[a-z]{2,8})?$/.test(normalizedTargetLanguage)) {
       res.status(400).json({
         error: 'Invalid targetLanguage format.',
       });
