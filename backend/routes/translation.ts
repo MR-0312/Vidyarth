@@ -2,7 +2,7 @@ import express, { Request, Response, Router } from 'express';
 import { translateChunked } from '../services/translationService';
 
 const router: Router = express.Router();
-const LANGUAGE_CODE_PATTERN = /^[a-z]{2,3}(?:-[a-z]{2,8})?$/;
+const LANGUAGE_CODE_PATTERN = /^[a-z]{2,3}(?:-[a-z]{2,8})?$/i;
 
 /**
  * POST /api/translate
@@ -23,7 +23,7 @@ router.post('/translate', async (req: Request, res: Response): Promise<void> => 
 
     const normalizedTargetLanguage = targetLanguage.trim().toLowerCase();
 
-    if (!text || !normalizedTargetLanguage) {
+    if (text.trim().length === 0 || !normalizedTargetLanguage) {
       res.status(400).json({
         error: 'Missing required fields: text, targetLanguage',
       });
