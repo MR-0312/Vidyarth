@@ -18,11 +18,11 @@ const xmlParser = new xml2js.Parser({ ignoreAttrs: false });
 function extractTextFromHtml(html: string): string {
   if (!html) return '';
   return html
-    .replace(/<[^>]*>/g, '') // Remove HTML tags
     .replace(/&nbsp;/g, ' ')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&amp;/g, '&')
+    .replace(/[<>]/g, '') // Remove angle brackets to prevent HTML/script injection patterns
     .replace(/\n\s*\n/g, '\n\n') // Clean up multiple newlines
     .trim()
     .substring(0, 50000); // Limit content
