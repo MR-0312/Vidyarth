@@ -11,6 +11,18 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const handleGitHubLogin = async () => {
+    try {
+      const response = await fetch(`${API_URL}/oauth/github/authorize`);
+      const data = await response.json();
+      if (data.authUrl) {
+        window.location.href = data.authUrl;
+      }
+    } catch (err) {
+      setError("Failed to initialize GitHub login. Please try again.");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -510,6 +522,8 @@ const Login = () => {
           >
             <button
               type="button"
+              onClick={handleGitHubLogin}
+              title="Login with GitHub"
               style={{
                 flex: "1",
                 padding: "12px",

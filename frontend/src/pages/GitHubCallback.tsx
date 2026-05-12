@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { API_URL } from "../config/api";
@@ -7,8 +7,13 @@ const GitHubCallback = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const hasRun = useRef(false);
 
   useEffect(() => {
+    // Prevent running twice in StrictMode or due to dependency changes
+    if (hasRun.current) return;
+    hasRun.current = true;
+
     const handleCallback = async () => {
       try {
         // Get authorization code from URL params
@@ -65,7 +70,7 @@ const GitHubCallback = () => {
     };
 
     handleCallback();
-  }, [navigate, login]);
+  }, []);
 
   return (
     <div

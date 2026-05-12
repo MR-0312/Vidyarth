@@ -12,6 +12,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import PendingBooks from "./pages/PendingBooks";
 import UserManagement from "./pages/UserManagement";
 import AdminSettings from "./pages/AdminSettings";
+import GitHubCallback from "./pages/GitHubCallback";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -30,6 +31,7 @@ function App() {
               <Route path="/read/:bookId" element={<Read />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/oauth/github/callback" element={<GitHubCallback />} />
               <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
 
               {/* Admin Routes */}
