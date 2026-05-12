@@ -25,9 +25,11 @@ async function translateText(text: string, targetLanguage: string): Promise<stri
       'ar': 'ar-SA',
     };
 
-    const targetLang = langMap[targetLanguage] || targetLanguage;
+    const sanitizedTargetLanguage = targetLanguage.trim();
+    const targetLang = langMap[sanitizedTargetLanguage.toLowerCase()] || sanitizedTargetLanguage;
     const encodedText = encodeURIComponent(text);
-    const url = `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${targetLang}`;
+    const encodedTargetLang = encodeURIComponent(targetLang);
+    const url = `https://api.mymemory.translated.net/get?q=${encodedText}&langpair=en|${encodedTargetLang}`;
 
     console.log(`[MyMemory] Translating: "${text.substring(0, 50)}..." to ${targetLanguage} (${targetLang})`);
     
