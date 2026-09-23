@@ -185,10 +185,10 @@ router.delete('/books/:id', adminMiddleware(), async (req: Request, res: Respons
     // Delete associated files from storage
     try {
       if (book.cover_image) {
-        await deleteFile('book-covers', book.cover_image);
+        await deleteFile(book.cover_image, 'cover');
       }
       if (book.ebook_file) {
-        await deleteFile('ebooks', book.ebook_file);
+        await deleteFile(book.ebook_file, 'ebook');
       }
     } catch (storageErr) {
       console.error('Error deleting book files:', storageErr);

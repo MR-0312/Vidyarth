@@ -3,7 +3,7 @@ import { check, validationResult } from 'express-validator';
 import authMiddleware from '../middleware/auth';
 import upload from '../middleware/upload';
 import { BookQueries } from '../db/queries';
-import { uploadFile, deleteFile } from '../services/storageService';
+import { uploadFile, deleteFile, fileExists } from '../services/storageService';
 import { parseChapters } from '../services/ebookParserService';
 import LoggingService from '../services/loggingService';
 
@@ -45,9 +45,19 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
     if (category) filters.category = category;
 
     const { books, total } = await BookQueries.getAll(page, limit, filters);
+    const availableBooks = [];
+
+    for (const book of books) {
+      if (book.ebook_file && await fileExists(book.ebook_file, 'ebook')) {
+        availableBooks.push(book);
+      } else {
+        // Storage is the source of truth for downloadable books. Remove orphaned metadata.
+        await BookQueries.delete(book.id as string);
+      }
+    }
 
     res.json({
-      books,
+      books: availableBooks,
       currentPage: page,
       totalPages: Math.ceil((total || 0) / limit),
       totalBooks: total
