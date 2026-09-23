@@ -82,6 +82,37 @@ async function deleteFile(fileUrl: string, fileType: string): Promise<void> {
 }
 
 /**
+ * Check whether a file still exists in its Supabase Storage bucket.
+ */
+async function fileExists(fileUrl: string, fileType: string): Promise<boolean> {
+  if (!fileUrl) return false;
+
+  const bucketName = fileType === 'cover' ? 'book-covers' : 'ebooks';
+  const marker = `/storage/v1/object/public/${bucketName}/`;
+  let filePath = fileUrl;
+
+  try {
+    const parsedUrl = new URL(fileUrl);
+    const markerIndex = parsedUrl.pathname.indexOf(marker);
+    if (markerIndex >= 0) {
+      filePath = decodeURIComponent(parsedUrl.pathname.slice(markerIndex + marker.length));
+    }
+  } catch {
+    filePath = fileUrl;
+  }
+
+  const lastSlash = filePath.lastIndexOf('/');
+  const folder = lastSlash >= 0 ? filePath.slice(0, lastSlash) : '';
+  const fileName = lastSlash >= 0 ? filePath.slice(lastSlash + 1) : filePath;
+  const { data, error } = await supabase.storage
+    .from(bucketName)
+    .list(folder, { limit: 100, search: fileName });
+
+  if (error) throw error;
+  return (data || []).some(file => file.name === fileName);
+}
+
+/**
  * Get content type based on file extension
  * @param {string} ext - File extension (e.g., '.epub', '.mobi', '.azw3')
  * @returns {string} - MIME type
@@ -144,4 +175,4 @@ async function ensureBucketsExist(): Promise<void> {
   }
 }
 
-export { uploadFile, deleteFile, getContentType, ensureBucketsExist };
+export { uploadFile, deleteFile, fileExists, getContentType, ensureBucketsExist };

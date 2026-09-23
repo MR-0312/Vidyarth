@@ -79,7 +79,7 @@ const Library = () => {
 
   // Set library books when fetched
   useEffect(() => {
-    if (activeNavItem === "books" && dynamicBooks.length > 0) {
+    if (activeNavItem === "books") {
       setAllLibraryBooks(dynamicBooks);
     }
   }, [dynamicBooks, activeNavItem]);
